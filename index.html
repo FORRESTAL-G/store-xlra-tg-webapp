@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Outsmart Genesis Store</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --tg-bg: #000000;
@@ -66,23 +67,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .handle-container {
-            height: 40px;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            flex-shrink: 0;
-            background: linear-gradient(to bottom, var(--tg-bg), transparent);
-        }
-        .handle {
-            width: 40px; 
-            height: 4px;
-            background-color: rgba(255,255,255,0.25);
-            border-radius: 2px;
-        }
-
         .stage {
             flex: 1;
             position: relative;
@@ -96,7 +80,6 @@
 
         .item {
             position: absolute;
-            /* Forza le dimensioni dal CSS - critiche per il calcolo */
             width: var(--card-width);
             height: var(--card-height);
             display: flex;
@@ -107,7 +90,6 @@
                         opacity var(--duration) ease,
                         filter var(--duration) ease;
             will-change: transform;
-            /* Posizionamento iniziale nascosto */
             left: 0;
             top: 0;
         }
@@ -176,32 +158,30 @@
             height: 100%;
             pointer-events: none;
             z-index: 1;
-            opacity: 0.4;
+            opacity: 0.35;
+            overflow: hidden;
         }
 
         .particle {
             position: absolute;
-            width: 3px;
-            height: 3px;
-            background: radial-gradient(circle, rgba(160,160,160,0.8), transparent);
+            background: radial-gradient(circle, rgba(200,200,200,0.6), transparent);
             border-radius: 50%;
             animation: float-up linear infinite;
-            opacity: 0;
         }
 
         @keyframes float-up {
             0% {
-                transform: translateY(0) translateX(0) scale(0);
+                transform: translateY(0) translateX(0) scale(0.3);
                 opacity: 0;
             }
-            10% {
-                opacity: 0.6;
+            15% {
+                opacity: 0.8;
             }
-            90% {
-                opacity: 0.3;
+            85% {
+                opacity: 0.4;
             }
             100% {
-                transform: translateY(-100vh) translateX(var(--drift)) scale(1);
+                transform: translateY(-110vh) translateX(var(--drift)) scale(1);
                 opacity: 0;
             }
         }
@@ -211,8 +191,8 @@
             position: fixed;
             bottom: calc(20px + var(--safe-bottom));
             right: calc(20px + var(--safe-right));
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             background: rgba(255,255,255,0.1);
             border: 1px solid rgba(255,255,255,0.2);
             border-radius: 50%;
@@ -229,21 +209,34 @@
             border-color: rgba(255,255,255,0.4);
         }
 
-        .audio-toggle.muted {
-            opacity: 0.5;
+        .audio-toggle.playing {
+            border-color: rgba(160,160,160,0.6);
         }
 
         @media (max-width: 600px) {
             :root { 
-                --card-width: 180px; 
-                --card-height: 240px;
+                --card-width: 160px; 
+                --card-height: 220px;
+                --item-gap: 15px;
             }
             .img-container { 
-                width: 120px; 
-                height: 120px; 
+                width: 110px; 
+                height: 110px; 
             }
-            .title { font-size: 1em; }
-            .desc { font-size: 0.75em; }
+            .title { font-size: 0.95em; }
+            .desc { font-size: 0.7em; }
+        }
+
+        @media (max-width: 400px) {
+            :root { 
+                --card-width: 140px; 
+                --card-height: 200px;
+                --item-gap: 12px;
+            }
+            .img-container { 
+                width: 95px; 
+                height: 95px; 
+            }
         }
     </style>
 </head>
@@ -252,28 +245,37 @@
         <div class="spinner"></div>
     </div>
 
-    <div class="handle-container">
-        <div class="handle"></div>
-    </div>
-
     <div id="stage" class="stage"></div>
 
-    <!-- Particles Container -->
     <div class="particles" id="particles"></div>
 
-    <!-- Audio Toggle -->
     <div class="audio-toggle" id="audioToggle" title="Toggle Audio">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
         </svg>
     </div>
 
-    <audio id="bgAudio" loop>
+    <audio id="bgAudio" loop preload="auto">
         <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_4e3f958c90.mp3" type="audio/mpeg">
     </audio>
 
     <script>
+        // --- TELEGRAM INIT ---
+        const tg = window.Telegram?.WebApp;
+        let isTelegram = false;
+        
+        if (tg && tg.initData) {
+            tg.ready();
+            tg.expand();
+            isTelegram = true;
+            
+            const themeParams = tg.themeParams || {};
+            const bgColor = themeParams.bg_color || '#000000';
+            document.documentElement.style.setProperty('--tg-bg', bgColor);
+            document.body.style.backgroundColor = bgColor;
+        }
+
         const CONFIG = {
             products: [
                 { id: 1, price: 50, credits: 400, nameIt: "Genesi x400", nameEn: "Genesis x400" },
@@ -296,7 +298,6 @@
         };
 
         function getComputedDimensions() {
-            // Leggi direttamente dai CSS custom properties computati
             const root = getComputedStyle(document.documentElement);
             return {
                 cardW: parseFloat(root.getPropertyValue('--card-width')),
@@ -311,27 +312,17 @@
             const stageRect = stage.getBoundingClientRect();
             const dim = getComputedDimensions();
 
-            // Centro VERO dello stage
             const centerX = stageRect.width / 2;
             const centerY = stageRect.height / 2;
-
-            console.log('Stage:', stageRect.width, 'x', stageRect.height);
-            console.log('Center:', centerX, centerY);
-            console.log('Card:', dim.cardW, 'x', dim.cardH);
 
             state.items.forEach((item, i) => {
                 const el = item.el;
                 const isActive = (i === state.activeIndex);
                 
                 if (state.mode === 'default') {
-                    // Offset orizzontale dalla posizione attiva
                     const offsetX = (i - state.activeIndex) * (dim.cardW + dim.gap);
-                    
-                    // Calcolo: centro - metà larghezza card + offset
                     const x = centerX - (dim.cardW / 2) + offsetX;
                     const y = centerY - (dim.cardH / 2);
-
-                    console.log(`Item ${i}: x=${x}, y=${y}`);
 
                     el.style.transform = `translate(${x}px, ${y}px)`;
                     el.style.opacity = isActive ? '1' : '0.9';
@@ -339,7 +330,6 @@
                     el.classList.remove('active');
 
                 } else {
-                    // Modalità focus
                     if (isActive) {
                         const x = centerX - (dim.cardW / 2) - 50;
                         const y = centerY - (dim.cardH / 2) - 20;
@@ -372,7 +362,6 @@
 
         function toggleMode() {
             if (state.mode === 'focused') {
-                // Uscendo da focused, torna all'elemento centrale
                 state.mode = 'default';
                 state.activeIndex = 1;
             } else {
@@ -407,9 +396,12 @@
                 el.className = 'item';
                 el.dataset.index = i;
 
+                // Path corretto per GitHub Pages
+                const imgPath = `assets/${assetCode}.png`;
+
                 el.innerHTML = `
                     <div class="img-container">
-                        <img src="https://placehold.co/160x160/1a1a1a/666?text=Orb+${p.id}" class="item-img" alt="Orb ${p.id}">
+                        <img src="${imgPath}" class="item-img" alt="${title}" onerror="this.src='https://placehold.co/160x160/1a1a1a/666?text=Orb+${p.id}'">
                     </div>
                     <div class="info-panel">
                         <div class="title">${title}</div>
@@ -431,7 +423,6 @@
                 state.items.push({ el, data: p });
             }
 
-            // Aspetta che il browser abbia renderizzato tutto
             setTimeout(() => {
                 calculateLayout();
                 document.getElementById('loader').style.opacity = '0';
@@ -439,6 +430,7 @@
             }, 100);
         }
 
+        // --- INTERACTIONS ---
         const stage = document.getElementById('stage');
         let lastX = 0, lastTime = 0;
 
@@ -483,74 +475,73 @@
             if (e.target === stage && state.mode === 'focused') toggleMode();
         });
 
-        let resizeTimeout;
         window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(calculateLayout, 150);
+            clearTimeout(window.resizeTimeout);
+            window.resizeTimeout = setTimeout(calculateLayout, 150);
         });
 
-        // --- PARTICLES SYSTEM ---
+        // --- PARTICLES ---
         function createParticles() {
             const container = document.getElementById('particles');
-            const particleCount = 25; // Leggero
+            const particleCount = 30;
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
                 
                 const startX = Math.random() * 100;
-                const drift = (Math.random() - 0.5) * 100; // Drift orizzontale
-                const duration = 8 + Math.random() * 6; // 8-14s
-                const delay = Math.random() * 5; // Stagger
-                const size = 2 + Math.random() * 2; // 2-4px
+                const drift = (Math.random() - 0.5) * 120;
+                const duration = 10 + Math.random() * 8;
+                const delay = Math.random() * 6;
+                const size = 2 + Math.random() * 3;
                 
                 particle.style.left = `${startX}%`;
-                particle.style.bottom = '-10px';
+                particle.style.bottom = '-20px';
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
                 particle.style.setProperty('--drift', `${drift}px`);
                 particle.style.animationDuration = `${duration}s`;
                 particle.style.animationDelay = `${delay}s`;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
                 
                 container.appendChild(particle);
             }
         }
 
-        // --- AUDIO SYSTEM ---
+        // --- AUDIO ---
         const audio = document.getElementById('bgAudio');
         const audioToggle = document.getElementById('audioToggle');
-        let audioEnabled = false;
+        let audioPlaying = false;
 
         audio.volume = 0;
 
         audioToggle.addEventListener('click', () => {
-            if (audioEnabled) {
-                // Fade out
+            if (audioPlaying) {
                 let vol = audio.volume;
                 const fadeOut = setInterval(() => {
-                    vol = Math.max(0, vol - 0.02);
+                    vol = Math.max(0, vol - 0.015);
                     audio.volume = vol;
                     if (vol <= 0) {
                         clearInterval(fadeOut);
                         audio.pause();
-                        audioEnabled = false;
-                        audioToggle.classList.add('muted');
+                        audioPlaying = false;
+                        audioToggle.classList.remove('playing');
                     }
-                }, 50);
+                }, 40);
             } else {
-                // Fade in
                 audio.play().then(() => {
                     let vol = 0;
                     const fadeIn = setInterval(() => {
-                        vol = Math.min(0.15, vol + 0.01); // Max 15% volume
+                        vol = Math.min(0.12, vol + 0.008);
                         audio.volume = vol;
-                        if (vol >= 0.15) {
+                        if (vol >= 0.12) {
                             clearInterval(fadeIn);
                         }
-                    }, 50);
-                    audioEnabled = true;
-                    audioToggle.classList.remove('muted');
-                }).catch(e => console.log('Audio blocked:', e));
+                    }, 40);
+                    audioPlaying = true;
+                    audioToggle.classList.add('playing');
+                }).catch(e => {
+                    console.log('Audio autoplay blocked. Click to play.');
+                });
             }
         });
 
