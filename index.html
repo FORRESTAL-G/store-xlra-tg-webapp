@@ -10,8 +10,8 @@
             --tg-bg: var(--tg-theme-bg-color, #000000);
             --tg-text: var(--tg-theme-text-color, #ffffff);
             --accent: #a0a0a0;
-            --glow: rgba(100, 149, 237, 0.5); /* CornflowerBlue soft glow */
-            --card-width: 220px; /* Fixed width for desktop control */
+            --glow: rgba(100, 149, 237, 0.5);
+            --card-width: 220px;
             --card-height: 280px;
             --transition-speed: 0.6s;
             --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
@@ -25,15 +25,13 @@
             background-color: var(--tg-bg);
             color: var(--tg-text);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden; /* We handle scroll manually */
+            overflow: hidden;
             height: 100vh;
             width: 100vw;
             display: flex;
             flex-direction: column;
-            /* Simulate Telegram Bottom Sheet Radius (Squircle-ish) */
             border-top-left-radius: 22px;
             border-top-right-radius: 22px;
-            overflow: hidden;
             position: relative;
             z-index: 1;
         }
@@ -77,19 +75,18 @@
             border-radius: 2px;
         }
 
-        /* Stage (The interactive area) */
+        /* Stage - CORREZIONE: Aggiunto height: 100% e flex: 1 */
         .stage {
             flex: 1;
+            height: 100%; /* Assicura che occupi tutto lo spazio verticale rimanente */
             position: relative;
             width: 100%;
-            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            /* We don't use overflow hidden here to allow complex absolute positioning */
             overflow: visible; 
             cursor: grab;
-            touch-action: none; /* Critical for custom swipe handling */
+            touch-action: none;
         }
         .stage:active { cursor: grabbing; }
 
@@ -102,8 +99,6 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            /* Transitions are applied via JS class toggling for performance, 
-               but default styles here */
             will-change: transform, opacity, filter;
             transition: transform var(--transition-speed) var(--ease-out-expo),
                         opacity var(--transition-speed) ease,
@@ -128,13 +123,13 @@
             object-fit: contain;
             filter: drop-shadow(0 0 15px var(--glow));
             transition: transform 0.3s ease, filter 0.3s ease;
-            pointer-events: none; /* Click passes to wrapper */
+            pointer-events: none;
         }
 
-        /* Info Text Panel (Title & Desc) */
+        /* Info Text Panel */
         .info-panel {
             position: absolute;
-            top: 190px; /* Below image */
+            top: 190px;
             width: 240px;
             text-align: center;
             opacity: 0;
@@ -159,24 +154,19 @@
         }
 
         /* --- STATES --- */
-
-        /* STATE 1: DEFAULT (Stacked/Flat) */
         .state-default .item {
-            /* Handled by JS, but base styles here */
             opacity: 0.8;
             filter: none;
         }
         .state-default .item .info-panel {
-            display: none; /* Hide text in default mode to keep it clean */
+            display: none;
         }
         .state-default .orb-wrapper:hover .orb-img {
             transform: scale(1.05);
             filter: drop-shadow(0 0 25px var(--glow));
         }
 
-        /* STATE 2: FOCUSED (Vertical Layout) */
         .state-focused .item {
-            /* Non-active items */
             opacity: 0.3;
             filter: blur(4px) grayscale(80%);
             transform: scale(0.7);
@@ -194,7 +184,7 @@
             transform: translateY(0);
         }
 
-        /* Mobile optimization for Text */
+        /* Mobile optimization */
         @media (max-width: 600px) {
             :root { --card-width: 180px; --card-height: 240px; }
             .orb-wrapper { width: 140px; height: 140px; }
@@ -231,7 +221,6 @@
         const CONFIG = {
             n8nCheck: 'https://tuo-webhook-n8n.com/check-bonus', // Replace
             n8nPay: 'https://tuo-webhook-n8n.com/generate-payment', // Replace
-            // Fallback for testing locally
             testUser: { id: 'TEST_DEV', language_code: 'it' }
         };
 
@@ -252,9 +241,9 @@
 
         // --- STATE MANAGEMENT ---
         let state = {
-            mode: 'default', // 'default' (flat stack) or 'focused' (vertical list)
-            activeIndex: 1,  // 0, 1, 2 (Default to middle)
-            items: [],       // Stores DOM elements and data
+            mode: 'default',
+            activeIndex: 1,
+            items: [],
             isDragging: false,
             startX: 0,
             currentX: 0,
@@ -266,9 +255,7 @@
             animationFrame: null
         };
 
-        // --- IMAGE PROCESSING: REMOVE WHITE BACKGROUND ---
-        // This function draws the image to a canvas, loops through pixels,
-        // and makes white pixels transparent.
+        // --- IMAGE PROCESSING: REMOVE WHITE OR BLACK BACKGROUND ---
         async function processImage(url) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -284,28 +271,17 @@
                     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                     const data = imgData.data;
 
-                    // LOOP: Check pixels
                     for (let i = 0; i < data.length; i += 4) {
                         const r = data[i];
                         const g = data[i + 1];
                         const b = data[i + 2];
                         
-                        // --- NEW LOGIC ---
-                        
-                        // 1. Check for White background (High RGB values)
                         const isWhite = (r > 240 && g > 240 && b > 240);
-                        
-                        // 2. Check for Black background (Low RGB values)
-                        // We use a threshold (e.g., 15) to catch near-black pixels
                         const isBlack = (r < 15 && g < 15 && b < 15);
 
                         if (isWhite || isBlack) {
-                            data[i + 3] = 0; // Set Alpha to 0 (Transparent)
+                            data[i + 3] = 0;
                         }
-                        
-                        // --- OPTIONAL: Glow Enhancement ---
-                        // If you want the orb itself to be slightly more opaque or adjust brightness:
-                        // if (!isWhite && !isBlack) { data[i+3] = 255; }
                     }
 
                     ctx.putImageData(imgData, 0, 0);
@@ -314,15 +290,14 @@
                 img.onerror = () => resolve(url);
             });
         }
+
         // --- INITIALIZATION ---
         async function init() {
             try {
-                // 1. Fetch Bonus Status (Mocked for demo, uncomment for prod)
                 // const res = await fetch(CONFIG.n8nCheck, ...);
                 // const statusMap = await res.json();
                 const statusMap = { "1": "1b", "2": "2d", "3": "3b" }; // MOCK
 
-                // 2. Build Data Objects
                 const stage = document.getElementById('stage');
                 
                 for (let i = 0; i < productsDef.length; i++) {
@@ -331,15 +306,12 @@
                     const isBonus = assetCode.includes('b');
                     const imgUrl = `./assets/${assetCode}.png`;
 
-                    // Process Image for Transparency
                     const cleanImgSrc = await processImage(imgUrl);
 
-                    // Texts
                     let title = isIt ? p.nameIt : p.nameEn;
                     if (isBonus) title += " + BONUS!";
                     const desc = isIt ? descriptions.it : descriptions.en;
 
-                    // Create DOM
                     const el = document.createElement('div');
                     el.className = 'item';
                     el.dataset.index = i;
@@ -357,13 +329,11 @@
                         </div>
                     `;
 
-                    // Click on Orb to Toggle Mode
                     el.querySelector('.orb-wrapper').addEventListener('click', (e) => {
                         e.stopPropagation();
                         if (state.mode === 'default') {
                             setFocusMode(i);
                         } else {
-                            // If already focused and clicking the active one
                             if (state.activeIndex === i) toggleMode();
                             else setFocusMode(i);
                         }
@@ -373,11 +343,9 @@
                     state.items.push({ el, data: p, asset: assetCode });
                 }
 
-                // 3. Initial Layout (Default Stack)
                 layoutItems();
                 updateMainButton();
                 
-                // Remove Loader
                 document.getElementById('loader').style.opacity = '0';
                 setTimeout(() => document.getElementById('loader').remove(), 500);
 
@@ -389,21 +357,26 @@
 
         // --- LAYOUT & ANIMATION ENGINE ---
         function layoutItems() {
-            const stageW = document.getElementById('stage').clientWidth;
-            const stageH = document.getElementById('stage').clientHeight;
-            const cardW = 220; // Matches CSS --card-width
-            const gap = 20;    // Spacing
-            const verticalGap = 140; // Spacing in Focus mode
+            // CORREZIONE: Usa document.body invece di #stage per le dimensioni
+            const stageW = document.body.clientWidth;
+            const stageH = document.body.clientHeight;
+            
+            // Rimuovi l'offset per il handle, ma aggiungi un piccolo margine per estetica
+            const handleOffset = 40; 
+            const effectiveH = stageH - handleOffset;
+
+            const cardW = 220;
+            const gap = 20;
+            const verticalGap = 140;
 
             state.items.forEach((item, i) => {
                 const el = item.el;
                 
                 if (state.mode === 'default') {
-                    // Horizontal Stack Layout (Centered)
-                    // Position relative to center
                     const offset = (i - state.activeIndex) * (cardW + gap);
                     const x = (stageW / 2) - (cardW / 2) + offset;
-                    const y = (stageH / 2) - 100; // Slightly above center
+                    // Centro verticale (tenendo conto del handle)
+                    const y = (effectiveH / 2) - (280 / 2); 
 
                     el.style.transform = `translate(${x}px, ${y}px) scale(1)`;
                     el.style.opacity = (i === state.activeIndex) ? '1' : '0.5';
@@ -411,22 +384,17 @@
                     el.classList.remove('active');
 
                 } else {
-                    // Focus Mode (Vertical List with Active Left)
                     const isActive = (i === state.activeIndex);
                     
                     if (isActive) {
-                        // Active item moves left and stays center vertically
-                        const x = (stageW / 2) - (cardW / 2) - 50; // Shift left
-                        const y = (stageH / 2) - 140; // Top half
+                        const x = (stageW / 2) - (cardW / 2) - 50;
+                        const y = (effectiveH / 2) - (280 / 2) - 20;
                         el.style.transform = `translate(${x}px, ${y}px) scale(1)`;
                         el.classList.add('active');
                     } else {
-                        // Inactive items move down
-                        // Calculate how many items down or up relative to active
                         const distance = i - state.activeIndex;
-                        // Only show above/below logic
-                        const y = (stageH / 2) - 140 + (distance * verticalGap);
-                        const x = (stageW / 2) - (cardW / 2) + 40; // Slightly right/behind
+                        const y = (effectiveH / 2) - (280 / 2) - 20 + (distance * verticalGap);
+                        const x = (stageW / 2) - (cardW / 2) + 40;
                         
                         el.style.transform = `translate(${x}px, ${y}px) scale(0.85)`;
                         el.classList.remove('active');
@@ -436,10 +404,9 @@
         }
 
         // --- INTERACTION HANDLERS (SWIPE & WHEEL) ---
-
         const stage = document.getElementById('stage');
 
-        // TOUCH EVENTS (Mobile)
+        // TOUCH EVENTS
         stage.addEventListener('touchstart', (e) => {
             state.isDragging = true;
             state.startX = e.touches[0].clientX;
@@ -454,19 +421,14 @@
             state.currentX = e.touches[0].clientX;
             state.currentY = e.touches[0].clientY;
             
-            // Calculate Velocity
             const now = Date.now();
             const dt = now - state.lastTime;
             if (dt > 0) {
                 const dx = state.currentX - state.lastX;
-                state.velocity = dx / dt; // px per ms
+                state.velocity = dx / dt;
             }
             state.lastX = state.currentX;
             state.lastTime = now;
-
-            // Visual feedback during drag (optional, but good for feel)
-            // For this demo, we let the native scroll lock handle visuals 
-            // until release.
         }, { passive: true });
 
         stage.addEventListener('touchend', handleSwipeEnd);
@@ -478,17 +440,13 @@
 
             const endX = e.changedTouches ? e.changedTouches[0].clientX : state.currentX;
             const diff = endX - state.startX;
-            const threshold = 50; // Min distance to trigger change
-            const absDiff = Math.abs(diff);
+            const threshold = 50; 
 
-            // If velocity is high, snap based on direction
-            // Otherwise snap based on distance
             if (state.velocity > 0.5 || (diff > threshold && Math.abs(diff) > 10)) {
-                changeFocus(-1); // Swipe Right -> Go Left (Index -1)
+                changeFocus(-1); 
             } else if (state.velocity < -0.5 || (diff < -threshold && Math.abs(diff) > 10)) {
-                changeFocus(1);  // Swipe Left -> Go Right (Index +1)
+                changeFocus(1); 
             } else {
-                // Snap back to current
                 layoutItems();
             }
         }
@@ -496,22 +454,17 @@
         // MOUSE WHEEL (Desktop)
         let wheelTimeout;
         stage.addEventListener('wheel', (e) => {
-            e.preventDefault(); // Stop actual page scroll
+            e.preventDefault(); 
             
-            // Debounce the wheel to detect direction
-            clearTimeout(wheelTimeout);
-            
-            // Determine direction (Y axis is usually vertical scroll, 
-            // but horizontal scroll is also possible)
             const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
 
+            clearTimeout(wheelTimeout);
             wheelTimeout = setTimeout(() => {
-                if (delta > 0) changeFocus(1); // Wheel Down/Right
-                else changeFocus(-1); // Wheel Up/Left
-            }, 50); // Small delay to catch rapid ticks
+                if (delta > 0) changeFocus(1);
+                else changeFocus(-1);
+            }, 50);
         }, { passive: false });
 
-        // Click background to toggle mode
         stage.addEventListener('click', (e) => {
             if(e.target === stage && state.mode === 'focused') {
                 toggleMode();
@@ -519,7 +472,6 @@
         });
 
         // --- LOGIC ---
-
         function setFocusMode(index) {
             if (state.mode === 'focused' && state.activeIndex === index) return;
             state.mode = 'focused';
@@ -533,7 +485,7 @@
 
         function toggleMode() {
             if (state.mode === 'default') {
-                state.mode = 'focused'; // Default to focus on center item if clicked
+                state.mode = 'focused';
                 document.body.className = 'state-focused';
             } else {
                 state.mode = 'default';
@@ -546,12 +498,8 @@
         function changeFocus(direction) {
             const newIndex = state.activeIndex + direction;
             
-            // Bounds check
-            if (newIndex < 0 || newIndex >= state.items.length) {
-                return; // Don't move
-            }
+            if (newIndex < 0 || newIndex >= state.items.length) return;
 
-            // Ensure we are in focused mode when moving
             if (state.mode === 'default') {
                 setFocusMode(newIndex);
                 return;
@@ -574,7 +522,6 @@
             tg.MainButton.setText(text);
             tg.MainButton.show();
             
-            // Remove old listeners
             tg.MainButton.offClick(handlePayment); 
             tg.MainButton.onClick(handlePayment);
         }
@@ -582,11 +529,9 @@
         async function handlePayment() {
             const item = state.items[state.activeIndex];
             
-            // Vibration
             tg.HapticFeedback.notificationOccurred('success');
             tg.MainButton.showProgress();
 
-            // Prepare Payload
             const payload = {
                 tg_id: user.id,
                 tier_id: item.data.id,
@@ -594,7 +539,7 @@
             };
 
             try {
-                // Uncomment for real request:
+                // UNCOMMENT FOR PRODUCTION
                 /*
                 const res = await fetch(CONFIG.n8nPay, {
                     method: 'POST',
@@ -604,11 +549,9 @@
                 const data = await res.json();
                 */
 
-                // MOCK RESPONSE (Remove this block in production)
                 const data = { url: 'https://stripe.com/pay/example' }; 
                 
                 if (data.url) {
-                    // Wait a tiny bit for the progress animation
                     setTimeout(() => {
                         Telegram.WebApp.openLink(data.url);
                         tg.MainButton.hideProgress();
@@ -629,7 +572,6 @@
 
         // Handle Window Resize
         window.addEventListener('resize', () => {
-            // Debounce resize
             clearTimeout(window.resizeTimer);
             window.resizeTimer = setTimeout(layoutItems, 100);
         });
