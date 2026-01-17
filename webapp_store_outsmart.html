@@ -1,0 +1,12 @@
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<script>
+    // Inizializza l'interfaccia
+    const tg = window.Telegram.WebApp;
+
+    // Comunica a Telegram che l'app è pronta
+    tg.ready();
+
+    // Fondamentale: NON chiamare tg.expand() se vuoi che rimanga "modale" dal basso.
+    // Se invece vuoi che occupi tutto lo schermo dopo un'azione, userai tg.expand();
+</script>
