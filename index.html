@@ -1,4 +1,4 @@
-<!-- Version 26, increment when changes are made -->
+<!-- Version 34 -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -109,20 +109,48 @@
             align-items: center;
             overflow: hidden;
             cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
             transition: all 0.3s ease;
             flex-shrink: 0;
         }
+        
+        .img-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            padding: 1px;
+            background: radial-gradient(circle at center, 
+                transparent 0%, 
+                transparent 60%, 
+                rgba(255,255,255,0.08) 75%, 
+                rgba(255,255,255,0.15) 90%, 
+                rgba(255,255,255,0.2) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
 
-        .img-container:hover {
-            border-color: rgba(255,255,255,0.4);
-            background: rgba(255,255,255,0.1);
+        .img-container:hover::before {
+            background: radial-gradient(circle at center, 
+                transparent 0%, 
+                transparent 60%, 
+                rgba(255,255,255,0.15) 75%, 
+                rgba(255,255,255,0.3) 90%, 
+                rgba(255,255,255,0.4) 100%);
         }
 
         .item-img {
             max-width: 100%;
             max-height: 100%;
             object-fit: contain;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        
+        .item-img.loaded {
+            opacity: 1;
         }
 
         .info-panel {
@@ -167,6 +195,14 @@
         .item.active .desc {
             text-align: left;
         }
+        
+        .quote {
+            font-style: italic;
+            margin-top: 12px;
+            font-size: 0.78em;
+            color: #999;
+            line-height: 1.5;
+        }
 
         .item.active .info-panel {
             opacity: 1;
@@ -182,13 +218,13 @@
             height: 100%;
             pointer-events: none;
             z-index: 1;
-            opacity: 0.35;
+            opacity: 0.5;
             overflow: hidden;
         }
 
         .particle {
             position: absolute;
-            background: radial-gradient(circle, rgba(200,200,200,0.6), transparent);
+            background: radial-gradient(circle, rgba(230, 232, 220, 0.85), rgba(200, 202, 195, 0.4), transparent);
             border-radius: 50%;
             animation: float-up linear infinite;
         }
@@ -368,7 +404,8 @@
             descriptions: {
                 it: "Orb della Genesi - energia pura necessaria alla manifestazione della tua strategia.",
                 en: "Genesis Orb - pure energy necessary to manifest your communication strategy."
-            }
+            },
+            quote: 'A wise man once said: "Heaven does not create one person above or below another." But that is not the whole quote. He goes on to say that "While we are all equal at birth, pretty soon things begin to change. Academic effort is what sets some people apart to rise above the other." At any rate, humans change over time based on their actions. Truth be told--at the end of the day--equality is just a fantasy, and most of us go through life denying the fact that we live in a meritocracy.'
         };
 
         async function validateTelegramUser() {
@@ -575,6 +612,7 @@
             }
 
             const isIt = validatedUser?.language_code === 'it' || true;
+            const imageLoadPromises = [];
 
             for (let i = 0; i < CONFIG.products.length; i++) {
                 const p = CONFIG.products[i];
@@ -594,16 +632,37 @@
                 el.dataset.productId = p.id;
 
                 const imgPath = `assets/${assetCode}.png`;
+                const img = new Image();
+                
+                // Promise per tracciare il caricamento
+                const loadPromise = new Promise((resolve) => {
+                    img.onload = () => {
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        img.src = `https://placehold.co/160x160/1a1a1a/666?text=Orb+${p.id}`;
+                        img.onload = resolve;
+                    };
+                });
+                
+                imageLoadPromises.push(loadPromise);
+                img.src = imgPath;
 
                 el.innerHTML = `
                     <div class="img-container">
-                        <img src="${imgPath}" class="item-img" alt="${title}" onerror="this.src='https://placehold.co/160x160/1a1a1a/666?text=Orb+${p.id}'">
+                        <img class="item-img" alt="${title}">
                     </div>
                     <div class="info-panel">
                         <div class="title">${title}</div>
                         <div class="desc">${desc}</div>
                     </div>
                 `;
+
+                const imgElement = el.querySelector('.item-img');
+                img.onload = () => {
+                    imgElement.src = img.src;
+                    setTimeout(() => imgElement.classList.add('loaded'), 50);
+                };
 
                 el.querySelector('.img-container').addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -618,6 +677,9 @@
                 stage.appendChild(el);
                 state.items.push({ el, data: p, asset: assetCode });
             }
+
+            // Attendi che tutte le immagini siano caricate
+            await Promise.all(imageLoadPromises);
 
             setTimeout(() => {
                 calculateLayout();
