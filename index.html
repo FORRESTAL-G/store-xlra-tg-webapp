@@ -1,3 +1,4 @@
+<!-- Version 27 - Lore & Atmosphere -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -9,6 +10,7 @@
         :root {
             --tg-bg: #000000;
             --tg-text: #ffffff;
+            --palladium: rgba(180, 185, 190, 0.6);
             
             --card-width: 220px;
             --card-height: 280px;
@@ -108,11 +110,8 @@
             align-items: center;
             overflow: hidden;
             cursor: pointer;
-            
-            /* Inset Shadow per bordo sfumato verso il centro */
             box-shadow: inset 0 0 25px 2px rgba(255, 255, 255, 0.15),
                         0 0 10px rgba(255, 255, 255, 0.05);
-            
             transition: all 0.3s ease;
             flex-shrink: 0;
             position: relative; 
@@ -131,7 +130,6 @@
             z-index: 1;
         }
 
-        /* Ribbon Bonus */
         .bonus-ribbon {
             position: absolute;
             top: 15px;
@@ -141,14 +139,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            
             background: linear-gradient(90deg, 
                 rgba(255, 215, 0, 0) 0%, 
                 rgba(255, 215, 0, 0.6) 20%, 
                 rgba(255, 215, 0, 0.8) 50%, 
                 rgba(255, 215, 0, 0.6) 80%, 
                 rgba(255, 215, 0, 0) 100%);
-                
             color: #fff;
             font-size: 11px;
             font-weight: 800;
@@ -173,17 +169,16 @@
             display: block;
             margin-left: 24px;
             text-align: left;
-            transform: translateX(0);
-            width: 280px;
-            min-width: 280px;
+            width: 320px;
+            min-width: 320px;
         }
 
         .title {
-            font-size: 1.2em;
-            font-weight: 700;
-            margin-bottom: 8px;
-            font-family: 'Times New Roman', serif;
-            letter-spacing: 0.5px;
+            font-size: 1.3em;
+            font-weight: 800;
+            margin-bottom: 12px;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            letter-spacing: 0.3px;
             color: #fff;
             text-align: center;
         }
@@ -193,14 +188,35 @@
         }
 
         .desc {
-            font-size: 0.85em;
-            color: #aaa;
-            line-height: 1.4;
+            font-size: 0.9em;
+            color: #bbb;
+            line-height: 1.5;
             text-align: center;
+            margin-bottom: 0;
         }
         
         .item.active .desc {
             text-align: left;
+        }
+
+        .lore-divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--palladium) 50%, 
+                transparent 100%);
+            margin: 16px 0 12px 0;
+        }
+
+        .lore-quote {
+            font-family: 'Times New Roman', Georgia, serif;
+            font-style: italic;
+            font-size: 10px;
+            line-height: 1.8;
+            color: var(--palladium);
+            text-align: left;
+            opacity: 0.7;
         }
 
         .item.active .info-panel {
@@ -208,7 +224,7 @@
             transform: translateX(0);
         }
 
-        /* --- PARTICLES --- */
+        /* --- PARTICLES (3 LIVELLI) --- */
         .particles {
             position: fixed;
             top: 0;
@@ -217,31 +233,48 @@
             height: 100%;
             pointer-events: none;
             z-index: 1;
-            opacity: 0.8; 
             overflow: hidden;
         }
 
         .particle {
             position: absolute;
-            background: radial-gradient(circle, rgba(240, 248, 255, 0.9), rgba(200, 210, 220, 0.4), transparent);
             border-radius: 50%;
             animation: float-up linear infinite;
-            box-shadow: 0 0 4px rgba(255, 255, 255, 0.6); 
+        }
+
+        /* Livello 1: Vicine (grandi, sfocate, lente) */
+        .particle.near {
+            background: radial-gradient(circle, rgba(240, 248, 255, 0.4), transparent);
+            filter: blur(2px);
+            opacity: 0.3;
+        }
+
+        /* Livello 2: Medie (normali) */
+        .particle.mid {
+            background: radial-gradient(circle, rgba(230, 240, 250, 0.7), rgba(200, 210, 220, 0.3), transparent);
+            opacity: 0.6;
+        }
+
+        /* Livello 3: Lontane (piccole, nitide, veloci) */
+        .particle.far {
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent);
+            box-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
+            opacity: 0.8;
         }
 
         @keyframes float-up {
             0% {
-                transform: translateY(0) translateX(0) scale(0.3);
+                transform: translateY(0) translateX(0) scale(var(--start-scale));
                 opacity: 0;
             }
             15% {
-                opacity: 1; 
+                opacity: var(--max-opacity);
             }
             85% {
-                opacity: 0.7;
+                opacity: calc(var(--max-opacity) * 0.6);
             }
             100% {
-                transform: translateY(-110vh) translateX(var(--drift)) scale(1);
+                transform: translateY(-110vh) translateX(var(--drift)) scale(var(--end-scale));
                 opacity: 0;
             }
         }
@@ -330,12 +363,13 @@
                 height: 110px; 
             }
             .item.active .info-panel {
-                width: 200px;
-                min-width: 200px;
+                width: 220px;
+                min-width: 220px;
                 margin-left: 16px;
             }
-            .title { font-size: 1em; }
-            .desc { font-size: 0.75em; }
+            .title { font-size: 1.1em; }
+            .desc { font-size: 0.8em; }
+            .lore-quote { font-size: 9px; }
             .bonus-ribbon {
                 top: 10px;
                 font-size: 9px;
@@ -354,10 +388,11 @@
                 height: 95px; 
             }
             .item.active .info-panel {
-                width: 180px;
-                min-width: 180px;
+                width: 200px;
+                min-width: 200px;
                 margin-left: 12px;
             }
+            .lore-quote { font-size: 8px; }
             .bonus-ribbon {
                 top: 8px;
                 font-size: 8px;
@@ -389,14 +424,11 @@
         </div>
     </div>
 
-    <audio id="bgAudio" loop preload="auto">
-        <!-- MODIFICA: Path relativo corretto per asset audio -->
-        <source src="assets/bg-music.mp3" type="audio/mpeg">
-        <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_4e3f958c90.mp3" type="audio/mpeg">
+    <audio id="bgAudio" preload="auto">
+        <!-- Tracce caricate dinamicamente -->
     </audio>
 
     <script>
-        // --- TELEGRAM INIT & VALIDATION ---
         const tg = window.Telegram?.WebApp;
         let isTelegram = false;
         let validatedUser = null;
@@ -415,18 +447,49 @@
             descriptions: {
                 it: "Orb della Genesi - energia pura necessaria alla manifestazione della tua strategia.",
                 en: "Genesis Orb - pure energy necessary to manifest your communication strategy."
-            }
+            },
+            loreQuote: 'A wise man once said: "Heaven does not create one person above or below another." But that is not the whole quote. He goes on to say that "While we are all equal at birth, pretty soon things begin to change. Academic effort is what sets some people apart to rise above the other." At any rate, humans change over time based on their actions. Truth be told--at the end of the day--equality is just a fantasy, and most of us go through life denying the fact that we live in a meritocracy.'
         };
 
-        // --- MAIN BUTTON LOGIC ---
+        // Shimmer sound (Web Audio API) - Versione migliorata
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        function playShimmer() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Forma d'onda più morbida
+            oscillator.type = 'sine';
+            
+            // Range 1369 → 2622 Hz
+            oscillator.frequency.setValueAtTime(1369, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(2622, audioContext.currentTime + 0.12);
+            
+            // Filtro passa-alto per cristallino
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(300, audioContext.currentTime);
+            
+            // Envelope più definito
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.03, audioContext.currentTime + 0.02); // Attack
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12); // Decay
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.12);
+        }
+
         function updateMainButton() {
             if (!tg) return;
-
             if (state.mode === 'focused') {
                 const currentItem = state.items[state.activeIndex];
                 const priceText = `${currentItem.data.price}€`;
-                
                 tg.MainButton.setText(`ACQUISTA - ${priceText}`);
+                tg.MainButton.color = '#1a1a1a';
+                tg.MainButton.textColor = '#b4b9be';
                 tg.MainButton.show();
             } else {
                 tg.MainButton.hide();
@@ -436,38 +499,28 @@
         if (tg) {
             tg.MainButton.onClick(() => {
                 if (state.mode !== 'focused') return;
-                
                 const currentItem = state.items[state.activeIndex];
-                
-                // Payload: invia sempre il codice completo (es "1b") al backend
                 const payload = {
                     chat_id: validatedUser ? validatedUser.id : (tg.initDataUnsafe?.user?.id || 0),
                     language_code: validatedUser ? validatedUser.language_code : (tg.initDataUnsafe?.user?.language_code || 'en'),
-                    product_id: currentItem.asset // es: '1d', '2b', '3d'
+                    product_id: currentItem.asset
                 };
-
                 tg.sendData(JSON.stringify(payload));
             });
         }
 
         async function validateTelegramUser() {
-            if (!tg || !tg.initData) {
-                console.error('Not running in Telegram WebApp');
-                return null;
-            }
-
+            if (!tg || !tg.initData) return null;
             try {
                 const response = await fetch(CONFIG.webhooks.validate, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ initData: tg.initData })
                 });
-
                 if (!response.ok) throw new Error('Validation failed');
                 const data = await response.json();
                 if (data.valid && data.user) return data.user;
                 throw new Error('Invalid user data');
-
             } catch (error) {
                 console.error('Telegram validation error:', error);
                 return null;
@@ -476,9 +529,7 @@
 
         async function checkBonusStatus(userId) {
             try {
-                const response = await fetch(`${CONFIG.webhooks.checkBonus}?userId=${userId}`, {
-                    method: 'GET'
-                });
+                const response = await fetch(`${CONFIG.webhooks.checkBonus}?userId=${userId}`);
                 if (!response.ok) throw new Error('Bonus check failed');
                 return await response.json();
             } catch (error) {
@@ -491,7 +542,6 @@
             tg.ready();
             tg.expand();
             isTelegram = true;
-            
             const themeParams = tg.themeParams || {};
             const bgColor = themeParams.bg_color || '#000000';
             document.documentElement.style.setProperty('--tg-bg', bgColor);
@@ -521,7 +571,6 @@
             const stage = document.getElementById('stage');
             const stageRect = stage.getBoundingClientRect();
             const dim = getComputedDimensions();
-
             const centerX = stageRect.width / 2;
             const centerY = stageRect.height / 2;
             const computedImg = window.innerWidth <= 600 ? (window.innerWidth <= 400 ? 95 : 110) : 160;
@@ -534,20 +583,17 @@
                     const offsetX = (i - state.activeIndex) * (computedImg + dim.gap);
                     const x = centerX - (computedImg / 2) + offsetX;
                     const y = centerY - (computedImg / 2);
-
                     el.style.transform = `translate(${x}px, ${y}px)`;
                     el.style.opacity = isActive ? '1' : '0.9';
                     el.style.filter = 'none';
                     el.classList.remove('active');
-
                 } else {
                     if (isActive) {
-                        const textWidth = window.innerWidth <= 600 ? (window.innerWidth <= 400 ? 180 : 200) : 280;
+                        const textWidth = window.innerWidth <= 600 ? (window.innerWidth <= 400 ? 200 : 220) : 320;
                         const margin = window.innerWidth <= 600 ? 16 : 24;
                         const totalWidth = computedImg + margin + textWidth;
                         const x = centerX - (totalWidth / 2);
                         const y = centerY - (computedImg / 2);
-                        
                         el.style.transform = `translate(${x}px, ${y}px) scale(1)`;
                         el.style.opacity = '1';
                         el.style.filter = 'none';
@@ -556,7 +602,6 @@
                         const distance = i - state.activeIndex;
                         const x = centerX - (computedImg / 2);
                         const y = centerY - (computedImg / 2) + (distance * dim.vGap);
-
                         el.style.transform = `translate(${x}px, ${y}px) scale(0.85)`;
                         el.style.opacity = '0.3';
                         el.style.filter = 'blur(3px) grayscale(70%)';
@@ -564,7 +609,6 @@
                     }
                 }
             });
-            
             updateMainButton();
         }
 
@@ -572,6 +616,17 @@
             const next = state.activeIndex + direction;
             if (next < 0 || next >= state.items.length) return;
             state.activeIndex = next;
+            
+            // Haptic feedback
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+            
+            // Shimmer sound
+            try {
+                playShimmer();
+            } catch (e) {}
+            
             calculateLayout();
         }
 
@@ -590,6 +645,15 @@
             state.activeIndex = index;
             state.mode = 'focused';
             document.body.className = 'state-focused';
+            
+            // Haptic + Shimmer
+            if (tg && tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+            try {
+                playShimmer();
+            } catch (e) {}
+            
             calculateLayout();
         }
 
@@ -612,7 +676,6 @@
             if (validatedUser) bonusData = await checkBonusStatus(validatedUser.id);
 
             let statusMap = { "1": "1d", "2": "2d", "3": "3d" };
-            
             if (bonusData) {
                 if (Array.isArray(bonusData) && bonusData.length > 0) statusMap = bonusData[0];
                 else if (typeof bonusData === 'object' && !Array.isArray(bonusData)) statusMap = bonusData;
@@ -623,26 +686,31 @@
             for (let i = 0; i < CONFIG.products.length; i++) {
                 const p = CONFIG.products[i];
                 const productIdStr = p.id.toString();
-                
-                // assetCode (es. "1b" o "1d") decide la LOGICA (bonus e payload)
                 const assetCode = statusMap[productIdStr] || `${p.id}d`;
                 const isBonus = assetCode.includes('b');
                 
                 let title = isIt ? p.nameIt : p.nameEn;
                 const desc = isIt ? CONFIG.descriptions.it : CONFIG.descriptions.en;
+                const showLore = (i === 2); // Solo terzo prodotto
 
                 const el = document.createElement('div');
                 el.className = 'item';
                 el.dataset.index = i;
                 el.dataset.productId = p.id;
 
-                // MODIFICA: L'immagine caricata è sempre "assets/ID.png"
-                // Indipendente dal bonus status. Il path è relativo "assets/".
                 const imgPath = `assets/${p.id}.png`;
                 
                 let ribbonHtml = '';
                 if (isBonus) {
-                    ribbonHtml = `<div class="bonus-ribbon">BONUS X2</div>`;
+                    ribbonHtml = `<div class="bonus-ribbon">BONUS ×2</div>`;
+                }
+
+                let loreHtml = '';
+                if (showLore) {
+                    loreHtml = `
+                        <div class="lore-divider"></div>
+                        <div class="lore-quote">${CONFIG.loreQuote}</div>
+                    `;
                 }
 
                 el.innerHTML = `
@@ -653,6 +721,7 @@
                     <div class="info-panel">
                         <div class="title">${title}</div>
                         <div class="desc">${desc}</div>
+                        ${loreHtml}
                     </div>
                 `;
 
@@ -667,8 +736,6 @@
                 });
 
                 stage.appendChild(el);
-                
-                // Salviamo l'assetCode (es. 1b) nei dati dell'item per passarlo poi al MainButton
                 state.items.push({ el, data: p, asset: assetCode });
             }
 
@@ -679,7 +746,7 @@
             }, 100);
         }
 
-        // --- INTERACTIONS ---
+        // INTERACTIONS
         const stageEl = document.getElementById('stage');
         let lastX = 0, lastTime = 0;
 
@@ -727,18 +794,40 @@
             window.resizeTimeout = setTimeout(calculateLayout, 150);
         });
 
-        // --- PARTICLES ---
+        // PARTICLES (3 livelli)
         function createParticles() {
             const container = document.getElementById('particles');
-            const particleCount = 30;
-
-            for (let i = 0; i < particleCount; i++) {
+            
+            // Livello Near: 10 grandi, lente
+            for (let i = 0; i < 10; i++) {
                 const particle = document.createElement('div');
-                particle.className = 'particle';
-                
+                particle.className = 'particle near';
                 const startX = Math.random() * 100;
-                const drift = (Math.random() - 0.5) * 120;
-                const duration = 10 + Math.random() * 8;
+                const drift = (Math.random() - 0.5) * 80;
+                const duration = 18 + Math.random() * 10;
+                const delay = Math.random() * 8;
+                const size = 4 + Math.random() * 4;
+                
+                particle.style.left = `${startX}%`;
+                particle.style.bottom = '-30px';
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.setProperty('--drift', `${drift}px`);
+                particle.style.setProperty('--start-scale', '0.5');
+                particle.style.setProperty('--end-scale', '1.5');
+                particle.style.setProperty('--max-opacity', '0.3');
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                container.appendChild(particle);
+            }
+            
+            // Livello Mid: 15 medie
+            for (let i = 0; i < 15; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle mid';
+                const startX = Math.random() * 100;
+                const drift = (Math.random() - 0.5) * 100;
+                const duration = 12 + Math.random() * 6;
                 const delay = Math.random() * 6;
                 const size = 2 + Math.random() * 3;
                 
@@ -747,23 +836,125 @@
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
                 particle.style.setProperty('--drift', `${drift}px`);
+                particle.style.setProperty('--start-scale', '0.3');
+                particle.style.setProperty('--end-scale', '1');
+                particle.style.setProperty('--max-opacity', '0.6');
                 particle.style.animationDuration = `${duration}s`;
                 particle.style.animationDelay = `${delay}s`;
+                container.appendChild(particle);
+            }
+            
+            // Livello Far: 20 piccole, veloci
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle far';
+                const startX = Math.random() * 100;
+                const drift = (Math.random() - 0.5) * 120;
+                const duration = 8 + Math.random() * 4;
+                const delay = Math.random() * 4;
+                const size = 1 + Math.random() * 2;
                 
+                particle.style.left = `${startX}%`;
+                particle.style.bottom = '-15px';
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.setProperty('--drift', `${drift}px`);
+                particle.style.setProperty('--start-scale', '0.2');
+                particle.style.setProperty('--end-scale', '0.8');
+                particle.style.setProperty('--max-opacity', '0.8');
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
                 container.appendChild(particle);
             }
         }
 
-        // --- AUDIO SYSTEM ---
+        // AUDIO SYSTEM
         const audio = document.getElementById('bgAudio');
         const audioToggle = document.getElementById('audioToggle');
         const volumeSlider = document.getElementById('volumeSlider');
         const volumeTrack = document.getElementById('volumeTrack');
         const volumeFill = document.getElementById('volumeFill');
 
+        // Playlist con crediti
+        const playlist = [
+            { path: 'assets/Celestine%20Corridor.mp3', title: 'Celestine Corridor', credit: 'suno.com' },
+            { path: 'assets/Moonglass%20Archive%20%28calm%20atmosphere%29.mp3', title: 'Moonglass Archive (calm)', credit: 'suno.com' },
+            { path: 'assets/Moonglass%20Archive.mp3', title: 'Moonglass Archive', credit: 'suno.com' },
+            { path: 'assets/Starglass%20Pavilion.mp3', title: 'Starglass Pavilion', credit: 'suno.com' },
+            { path: 'assets/Reflected%20Light%20-%20SergePavkinMusic.mp3', title: 'Reflected Light', credit: 'SergePavkinMusic' },
+            { path: 'assets/the-heros-journey-by-audio-library-beats.mp3', title: "The Hero's Journey", credit: 'Audio Library Beats' }
+        ];
+
+        // Algoritmo numeri primi per shuffle
+        // Sceglie un numero primo coprime con playlist.length per garantire ciclo completo
+        const primesForShuffle = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31];
+        const primeStep = primesForShuffle.find(p => playlist.length % p !== 0) || 7;
+        
+        let currentTrackIndex = 0;
+        let playedCount = 0;
         let currentVolume = 0.5;
         let audioStarted = false;
+        let isFading = false;
         audio.volume = 0;
+
+        function getNextTrackIndex() {
+            // Algoritmo shuffle basato su numeri primi
+            // Offset circolare con step primo garantisce distribuzione uniforme
+            currentTrackIndex = (currentTrackIndex + primeStep) % playlist.length;
+            playedCount++;
+            
+            // Reset dopo un ciclo completo
+            if (playedCount >= playlist.length) {
+                playedCount = 0;
+            }
+            
+            return currentTrackIndex;
+        }
+
+        function loadTrack(index) {
+            const track = playlist[index];
+            audio.src = track.path;
+            console.log(`Now playing: ${track.title} by ${track.credit}`);
+        }
+
+        function fadeIn(targetVolume, duration = 3000) {
+            if (isFading) return;
+            isFading = true;
+            
+            const steps = 60; // 60 steps per smooth fade
+            const stepDuration = duration / steps;
+            const volumeIncrement = targetVolume / steps;
+            
+            let currentStep = 0;
+            audio.volume = 0;
+            
+            const fadeInterval = setInterval(() => {
+                currentStep++;
+                audio.volume = Math.min(targetVolume, volumeIncrement * currentStep);
+                
+                if (currentStep >= steps) {
+                    clearInterval(fadeInterval);
+                    isFading = false;
+                    audio.volume = targetVolume;
+                }
+            }, stepDuration);
+        }
+
+        function playNextTrack() {
+            const nextIndex = getNextTrackIndex();
+            loadTrack(nextIndex);
+            
+            audio.play().then(() => {
+                fadeIn(currentVolume, 3000);
+            }).catch(e => {
+                console.log('Playback error:', e);
+            });
+        }
+
+        // Auto-play prossima traccia quando finisce
+        audio.addEventListener('ended', () => {
+            playNextTrack();
+        });
 
         function updateVolumeUI() {
             volumeFill.style.height = `${currentVolume * 100}%`;
@@ -771,16 +962,17 @@
 
         function startAudio() {
             if (audioStarted) return;
+            audioStarted = true;
+            
+            // Carica prima traccia (indice 0)
+            loadTrack(0);
+            
             audio.play().then(() => {
-                audioStarted = true;
-                let vol = 0;
-                const fadeIn = setInterval(() => {
-                    vol = Math.min(currentVolume, vol + 0.02);
-                    audio.volume = vol;
-                    if (vol >= currentVolume) clearInterval(fadeIn);
-                }, 30);
+                fadeIn(currentVolume, 3000);
                 audioToggle.classList.add('playing');
-            }).catch(e => {});
+            }).catch(e => {
+                console.log('Autoplay blocked');
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => setTimeout(startAudio, 200));
@@ -803,7 +995,10 @@
             const y = rect.bottom - e.clientY;
             const height = rect.height;
             currentVolume = Math.max(0, Math.min(1, y / height));
-            audio.volume = currentVolume;
+            
+            if (!isFading) {
+                audio.volume = currentVolume;
+            }
             updateVolumeUI();
         });
 
