@@ -341,9 +341,10 @@
             </svg>
         </div>
     </div>
-    <!-- AUDIO ELEMENT - TO BE UPDATED -->
+
     <audio id="bgAudio" loop preload="auto">
         <source src="assets/bg-music.mp3" type="audio/mpeg">
+        <source src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_4e3f958c90.mp3" type="audio/mpeg">
     </audio>
 
     <script>
@@ -354,8 +355,8 @@
 
         const CONFIG = {
             webhooks: {
-                validate: 'https://vp75.app.n8n.cloud/webhook/468awf86g4g168d4hdgd4g84163a5wd878s41/telegram-validate',
-                checkBonus: 'https://vp75.app.n8n.cloud/webhook/60e82333-89fc-4718-84a8-3acb29be720a/check-bonus',
+                validate: 'https://your-n8n-webhook.com/telegram-validate',
+                checkBonus: 'https://your-n8n-webhook.com/check-bonus',
                 topUp: 'https://vp75.app.n8n.cloud/webhook/8fa65d84-e5e5-41eb-80e8-1e5afa6e6b91/top-up'
             },
             products: [
@@ -460,15 +461,18 @@
             const centerX = stageRect.width / 2;
             const centerY = stageRect.height / 2;
 
+            // Dimensioni reali da computed styles mobile-responsive
+            const computedImg = window.innerWidth <= 600 ? 
+                (window.innerWidth <= 400 ? 95 : 110) : 160;
+
             state.items.forEach((item, i) => {
                 const el = item.el;
                 const isActive = (i === state.activeIndex);
                 
                 if (state.mode === 'default') {
-                    const imgSize = 160;
-                    const offsetX = (i - state.activeIndex) * (imgSize + dim.gap);
-                    const x = centerX - (imgSize / 2) + offsetX;
-                    const y = centerY - (imgSize / 2);
+                    const offsetX = (i - state.activeIndex) * (computedImg + dim.gap);
+                    const x = centerX - (computedImg / 2) + offsetX;
+                    const y = centerY - (computedImg / 2);
 
                     el.style.transform = `translate(${x}px, ${y}px)`;
                     el.style.opacity = isActive ? '1' : '0.9';
@@ -477,12 +481,12 @@
 
                 } else {
                     if (isActive) {
-                        const imgSize = 160;
-                        const textWidth = 280;
-                        const margin = 24;
-                        const totalWidth = imgSize + margin + textWidth;
+                        const textWidth = window.innerWidth <= 600 ? 
+                            (window.innerWidth <= 400 ? 180 : 200) : 280;
+                        const margin = window.innerWidth <= 600 ? 16 : 24;
+                        const totalWidth = computedImg + margin + textWidth;
                         const x = centerX - (totalWidth / 2);
-                        const y = centerY - (imgSize / 2);
+                        const y = centerY - (computedImg / 2);
                         
                         el.style.transform = `translate(${x}px, ${y}px) scale(1)`;
                         el.style.opacity = '1';
@@ -490,9 +494,8 @@
                         el.classList.add('active');
                     } else {
                         const distance = i - state.activeIndex;
-                        const imgSize = 160;
-                        const x = centerX - (imgSize / 2);
-                        const y = centerY - (imgSize / 2) + (distance * dim.vGap);
+                        const x = centerX - (computedImg / 2);
+                        const y = centerY - (computedImg / 2) + (distance * dim.vGap);
 
                         el.style.transform = `translate(${x}px, ${y}px) scale(0.85)`;
                         el.style.opacity = '0.3';
@@ -553,14 +556,32 @@
                 bonusData = await checkBonusStatus(validatedUser.id);
             }
 
-            // STEP 3: Costruisci UI con dati validati
-            const statusMap = bonusData || { "1": "1b", "2": "2d", "3": "3b" };
+            // STEP 3: Parse risposta webhook
+            let statusMap = { "1": "1d", "2": "2d", "3": "3d" }; // Default
+            
+            if (bonusData) {
+                console.log('Bonus data ricevuta:', bonusData);
+                
+                // Il webhook risponde con array contenente oggetto
+                if (Array.isArray(bonusData) && bonusData.length > 0) {
+                    statusMap = bonusData[0];
+                } else if (typeof bonusData === 'object' && !Array.isArray(bonusData)) {
+                    // O direttamente oggetto
+                    statusMap = bonusData;
+                }
+                
+                console.log('Status map applicata:', statusMap);
+            }
+
             const isIt = validatedUser?.language_code === 'it' || true;
 
             for (let i = 0; i < CONFIG.products.length; i++) {
                 const p = CONFIG.products[i];
-                const assetCode = statusMap[p.id.toString()] || `${p.id}d`;
+                const productIdStr = p.id.toString();
+                const assetCode = statusMap[productIdStr] || `${p.id}d`;
                 const isBonus = assetCode.includes('b');
+                
+                console.log(`Prodotto ${p.id}: assetCode=${assetCode}, isBonus=${isBonus}`);
                 
                 let title = isIt ? p.nameIt : p.nameEn;
                 if (isBonus) title += " + BONUS!";
