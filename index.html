@@ -1,4 +1,4 @@
-<!-- Version 27 - Lore & Atmosphere -->
+<!-- Version 28 - Bubble Effect & Deep Particles -->
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -103,31 +103,56 @@
         .img-container {
             width: 160px;
             height: 160px;
-            background: rgba(255,255,255,0.02);
+            background: transparent;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            overflow: visible;
             cursor: pointer;
-            box-shadow: inset 0 0 25px 2px rgba(255, 255, 255, 0.15),
-                        0 0 10px rgba(255, 255, 255, 0.05);
+            border: 0.5px solid rgba(255, 255, 255, 0.08);
             transition: all 0.3s ease;
             flex-shrink: 0;
-            position: relative; 
+            position: relative;
+        }
+        
+        /* Alone luminoso pulsante */
+        .img-container::before {
+            content: '';
+            position: absolute;
+            inset: -20px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(180, 200, 255, 0.3), transparent 70%);
+            z-index: -1;
+            animation: glow-pulse 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes glow-pulse {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(0.95);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.05);
+            }
         }
 
         .img-container:hover {
-            box-shadow: inset 0 0 35px 5px rgba(255, 255, 255, 0.3),
-                        0 0 15px rgba(255, 255, 255, 0.1);
-            background: rgba(255,255,255,0.05);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .img-container:hover::before {
+            opacity: 0.9;
         }
 
         .item-img {
-            max-width: 100%;
-            max-height: 100%;
+            max-width: 90%;
+            max-height: 90%;
             object-fit: contain;
             z-index: 1;
+            position: relative;
         }
 
         .bonus-ribbon {
@@ -201,22 +226,45 @@
 
         .lore-divider {
             width: 100%;
-            height: 1px;
+            height: 0.5px;
             background: linear-gradient(90deg, 
                 transparent 0%, 
-                var(--palladium) 50%, 
+                rgba(180, 185, 190, 0.15) 50%, 
                 transparent 100%);
-            margin: 16px 0 12px 0;
+            margin: 14px 0 10px 0;
         }
 
         .lore-quote {
             font-family: 'Times New Roman', Georgia, serif;
             font-style: italic;
             font-size: 10px;
-            line-height: 1.8;
+            line-height: 1.4;
             color: var(--palladium);
             text-align: left;
             opacity: 0.7;
+            max-height: 80px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+            pointer-events: auto;
+            touch-action: pan-y;
+        }
+        
+        .lore-quote::-webkit-scrollbar {
+            width: 3px;
+        }
+        
+        .lore-quote::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .lore-quote::-webkit-scrollbar-thumb {
+            background: rgba(180, 185, 190, 0.3);
+            border-radius: 2px;
+        }
+        
+        .lore-quote::-webkit-scrollbar-thumb:hover {
+            background: rgba(180, 185, 190, 0.5);
         }
 
         .item.active .info-panel {
@@ -224,7 +272,7 @@
             transform: translateX(0);
         }
 
-        /* --- PARTICLES (3 LIVELLI) --- */
+        /* --- PARTICLES (6 LIVELLI) --- */
         .particles {
             position: fixed;
             top: 0;
@@ -242,24 +290,42 @@
             animation: float-up linear infinite;
         }
 
-        /* Livello 1: Vicine (grandi, sfocate, lente) */
-        .particle.near {
-            background: radial-gradient(circle, rgba(240, 248, 255, 0.4), transparent);
-            filter: blur(2px);
+        /* Livello 1: Tiny - lontanissime, lentissime */
+        .particle.tiny {
+            background: radial-gradient(circle, rgba(220, 230, 240, 0.4), transparent);
+            opacity: 0.2;
+        }
+
+        /* Livello 2: Small - lontane, lente */
+        .particle.small {
+            background: radial-gradient(circle, rgba(230, 240, 250, 0.5), transparent);
             opacity: 0.3;
         }
 
-        /* Livello 2: Medie (normali) */
-        .particle.mid {
-            background: radial-gradient(circle, rgba(230, 240, 250, 0.7), rgba(200, 210, 220, 0.3), transparent);
+        /* Livello 3: Medium-small */
+        .particle.medium-small {
+            background: radial-gradient(circle, rgba(235, 245, 255, 0.6), rgba(200, 210, 220, 0.3), transparent);
+            opacity: 0.5;
+        }
+
+        /* Livello 4: Medium-large */
+        .particle.medium-large {
+            background: radial-gradient(circle, rgba(240, 250, 255, 0.7), rgba(210, 220, 230, 0.4), transparent);
             opacity: 0.6;
         }
 
-        /* Livello 3: Lontane (piccole, nitide, veloci) */
-        .particle.far {
-            background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent);
-            box-shadow: 0 0 3px rgba(255, 255, 255, 0.8);
-            opacity: 0.8;
+        /* Livello 5: Large - vicine */
+        .particle.large {
+            background: radial-gradient(circle, rgba(245, 250, 255, 0.8), rgba(220, 230, 240, 0.4), transparent);
+            filter: blur(1px);
+            opacity: 0.4;
+        }
+
+        /* Livello 6: Huge - vicinissime, velocissime, sfocate */
+        .particle.huge {
+            background: radial-gradient(circle, rgba(250, 255, 255, 0.6), transparent);
+            filter: blur(3px);
+            opacity: 0.3;
         }
 
         @keyframes float-up {
@@ -351,6 +417,68 @@
             border-color: rgba(160,160,160,0.6);
         }
 
+        /* Balance Counter */
+        .balance-counter {
+            position: fixed;
+            top: calc(20px + var(--safe-top));
+            right: calc(20px + var(--safe-right));
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px);
+            border: 0.5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 8px 14px 8px 8px;
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+
+        .balance-counter:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .balance-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .balance-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .balance-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            letter-spacing: 0.3px;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        @media (max-width: 600px) {
+            .balance-counter {
+                padding: 6px 12px 6px 6px;
+            }
+            .balance-icon {
+                width: 24px;
+                height: 24px;
+            }
+            .balance-value {
+                font-size: 14px;
+            }
+        }
+
         @media (max-width: 600px) {
             :root { 
                 --card-width: 160px;
@@ -362,6 +490,9 @@
                 width: 110px; 
                 height: 110px; 
             }
+            .img-container::before {
+                inset: -15px;
+            }
             .item.active .info-panel {
                 width: 220px;
                 min-width: 220px;
@@ -369,7 +500,10 @@
             }
             .title { font-size: 1.1em; }
             .desc { font-size: 0.8em; }
-            .lore-quote { font-size: 9px; }
+            .lore-quote { 
+                font-size: 9px;
+                max-height: 70px;
+            }
             .bonus-ribbon {
                 top: 10px;
                 font-size: 9px;
@@ -387,12 +521,18 @@
                 width: 95px; 
                 height: 95px; 
             }
+            .img-container::before {
+                inset: -12px;
+            }
             .item.active .info-panel {
                 width: 200px;
                 min-width: 200px;
                 margin-left: 12px;
             }
-            .lore-quote { font-size: 8px; }
+            .lore-quote { 
+                font-size: 8px;
+                max-height: 60px;
+            }
             .bonus-ribbon {
                 top: 8px;
                 font-size: 8px;
@@ -409,6 +549,13 @@
     <div id="stage" class="stage"></div>
 
     <div class="particles" id="particles"></div>
+
+    <div class="balance-counter">
+        <div class="balance-icon">
+            <img src="assets/1.png" alt="Balance" onerror="this.src='https://placehold.co/28x28/1a1a1a/666?text=B'">
+        </div>
+        <div class="balance-value" id="balanceValue">0</div>
+    </div>
 
     <div class="audio-control">
         <div class="volume-slider" id="volumeSlider">
@@ -436,7 +583,7 @@
         const CONFIG = {
             webhooks: {
                 validate: 'https://vp75.app.n8n.cloud/webhook/468awf86g4g168d4hdgd4g84163a5wd878s41/telegram-validate',
-                checkBonus: 'https://vp75.app.n8n.cloud/webhook/60e82333-89fc-4718-84a8-3acb29be720a/check-bonus',
+                checkBonusAndBalance: 'https://vp75.app.n8n.cloud/webhook/60e82333-89fc-4718-84a8-3acb29be720a/check-bonus-and-balance',
                 topUp: 'https://vp75.app.n8n.cloud/webhook/8fa65d84-e5e5-41eb-80e8-1e5afa6e6b91/top-up'
             },
             products: [
@@ -451,42 +598,43 @@
             loreQuote: 'A wise man once said: "Heaven does not create one person above or below another." But that is not the whole quote. He goes on to say that "While we are all equal at birth, pretty soon things begin to change. Academic effort is what sets some people apart to rise above the other." At any rate, humans change over time based on their actions. Truth be told--at the end of the day--equality is just a fantasy, and most of us go through life denying the fact that we live in a meritocracy.'
         };
 
-        // Shimmer sound (Web Audio API) - Versione migliorata
+        // Shimmer sound - UI Click soft
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         function playShimmer() {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            const filter = audioContext.createBiquadFilter();
-            
-            oscillator.connect(filter);
-            filter.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            // Forma d'onda più morbida
-            oscillator.type = 'sine';
-            
-            // Range 1369 → 2622 Hz
-            oscillator.frequency.setValueAtTime(1369, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(2622, audioContext.currentTime + 0.12);
-            
-            // Filtro passa-alto per cristallino
-            filter.type = 'highpass';
-            filter.frequency.setValueAtTime(300, audioContext.currentTime);
-            
-            // Envelope più definito
-            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.03, audioContext.currentTime + 0.02); // Attack
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12); // Decay
-            
-            oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.12);
+            try {
+                // Resume context se sospeso
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.type = 'sine';
+                
+                // Click morbido: singola nota breve discendente
+                oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(440, audioContext.currentTime + 0.05);
+                
+                // Envelope molto breve tipo "pluck"
+                gainNode.gain.setValueAtTime(0.02, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.05);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.05);
+            } catch (e) {
+                console.log('Shimmer error:', e);
+            }
         }
 
         function updateMainButton() {
             if (!tg) return;
             if (state.mode === 'focused') {
                 const currentItem = state.items[state.activeIndex];
-                const priceText = `${currentItem.data.price}€`;
+                const priceText = `${currentItem.data.price} CHF`;
                 tg.MainButton.setText(`ACQUISTA - ${priceText}`);
                 tg.MainButton.color = '#1a1a1a';
                 tg.MainButton.textColor = '#b4b9be';
@@ -497,15 +645,31 @@
         }
 
         if (tg) {
-            tg.MainButton.onClick(() => {
+            tg.MainButton.onClick(async () => {
                 if (state.mode !== 'focused') return;
+                
                 const currentItem = state.items[state.activeIndex];
-                const payload = {
-                    chat_id: validatedUser ? validatedUser.id : (tg.initDataUnsafe?.user?.id || 0),
-                    language_code: validatedUser ? validatedUser.language_code : (tg.initDataUnsafe?.user?.language_code || 'en'),
-                    product_id: currentItem.asset
-                };
-                tg.sendData(JSON.stringify(payload));
+                const userId = validatedUser ? validatedUser.id : (tg.initDataUnsafe?.user?.id || 0);
+                
+                try {
+                    const response = await fetch(CONFIG.webhooks.topUp, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: userId,
+                            product_id: currentItem.asset
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('Purchase initiated:', data);
+                    } else {
+                        console.error('Purchase failed:', response.status);
+                    }
+                } catch (error) {
+                    console.error('Purchase error:', error);
+                }
             });
         }
 
@@ -527,14 +691,36 @@
             }
         }
 
-        async function checkBonusStatus(userId) {
+        async function checkBonusAndBalance(userId) {
             try {
-                const response = await fetch(`${CONFIG.webhooks.checkBonus}?userId=${userId}`);
-                if (!response.ok) throw new Error('Bonus check failed');
-                return await response.json();
+                const response = await fetch(`${CONFIG.webhooks.checkBonusAndBalance}?userId=${userId}`);
+                if (!response.ok) throw new Error('Bonus and balance check failed');
+                const data = await response.json();
+                
+                // Il webhook risponde con campo "response" contenente i dati
+                const result = data.response || data;
+                
+                // Estrai balance se presente
+                if (result.balance !== undefined) {
+                    updateBalance(result.balance);
+                }
+                
+                return result;
             } catch (error) {
-                console.error('Bonus check error:', error);
+                console.error('Bonus and balance check error:', error);
                 return null;
+            }
+        }
+        
+        function updateBalance(balance) {
+            const balanceEl = document.getElementById('balanceValue');
+            if (balanceEl) {
+                // Anima il cambio di valore
+                balanceEl.style.transform = 'scale(1.2)';
+                setTimeout(() => {
+                    balanceEl.textContent = balance;
+                    balanceEl.style.transform = 'scale(1)';
+                }, 150);
             }
         }
         
@@ -737,6 +923,24 @@
 
                 stage.appendChild(el);
                 state.items.push({ el, data: p, asset: assetCode });
+                
+                // Se c'è lore, gestisci eventi scroll per non propagare
+                if (showLore) {
+                    const loreEl = el.querySelector('.lore-quote');
+                    if (loreEl) {
+                        loreEl.addEventListener('touchstart', (e) => {
+                            e.stopPropagation();
+                        }, { passive: true });
+                        
+                        loreEl.addEventListener('touchmove', (e) => {
+                            e.stopPropagation();
+                        }, { passive: true });
+                        
+                        loreEl.addEventListener('wheel', (e) => {
+                            e.stopPropagation();
+                        }, { passive: true });
+                    }
+                }
             }
 
             setTimeout(() => {
@@ -794,74 +998,143 @@
             window.resizeTimeout = setTimeout(calculateLayout, 150);
         });
 
-        // PARTICLES (3 livelli)
+        // PARTICLES (6 livelli con profondità)
         function createParticles() {
             const container = document.getElementById('particles');
             
-            // Livello Near: 10 grandi, lente
-            for (let i = 0; i < 10; i++) {
+            // Livello 1: Tiny - lontanissime, lentissime
+            for (let i = 0; i < 8; i++) {
                 const particle = document.createElement('div');
-                particle.className = 'particle near';
+                particle.className = 'particle tiny';
                 const startX = Math.random() * 100;
-                const drift = (Math.random() - 0.5) * 80;
-                const duration = 18 + Math.random() * 10;
-                const delay = Math.random() * 8;
-                const size = 4 + Math.random() * 4;
+                const drift = (Math.random() - 0.5) * 40;
+                const duration = 25 + Math.random() * 15;
+                const delay = Math.random() * 10;
+                const size = 1 + Math.random() * 1.5;
                 
                 particle.style.left = `${startX}%`;
                 particle.style.bottom = '-30px';
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
                 particle.style.setProperty('--drift', `${drift}px`);
-                particle.style.setProperty('--start-scale', '0.5');
-                particle.style.setProperty('--end-scale', '1.5');
+                particle.style.setProperty('--start-scale', '0.3');
+                particle.style.setProperty('--end-scale', '0.6');
+                particle.style.setProperty('--max-opacity', '0.2');
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                container.appendChild(particle);
+            }
+            
+            // Livello 2: Small - lontane, lente
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle small';
+                const startX = Math.random() * 100;
+                const drift = (Math.random() - 0.5) * 60;
+                const duration = 20 + Math.random() * 10;
+                const delay = Math.random() * 8;
+                const size = 1.5 + Math.random() * 2;
+                
+                particle.style.left = `${startX}%`;
+                particle.style.bottom = '-25px';
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.setProperty('--drift', `${drift}px`);
+                particle.style.setProperty('--start-scale', '0.4');
+                particle.style.setProperty('--end-scale', '0.8');
                 particle.style.setProperty('--max-opacity', '0.3');
                 particle.style.animationDuration = `${duration}s`;
                 particle.style.animationDelay = `${delay}s`;
                 container.appendChild(particle);
             }
             
-            // Livello Mid: 15 medie
-            for (let i = 0; i < 15; i++) {
+            // Livello 3: Medium-small
+            for (let i = 0; i < 12; i++) {
                 const particle = document.createElement('div');
-                particle.className = 'particle mid';
+                particle.className = 'particle medium-small';
                 const startX = Math.random() * 100;
-                const drift = (Math.random() - 0.5) * 100;
-                const duration = 12 + Math.random() * 6;
+                const drift = (Math.random() - 0.5) * 80;
+                const duration = 15 + Math.random() * 8;
                 const delay = Math.random() * 6;
-                const size = 2 + Math.random() * 3;
+                const size = 2 + Math.random() * 2.5;
                 
                 particle.style.left = `${startX}%`;
                 particle.style.bottom = '-20px';
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
                 particle.style.setProperty('--drift', `${drift}px`);
-                particle.style.setProperty('--start-scale', '0.3');
+                particle.style.setProperty('--start-scale', '0.5');
                 particle.style.setProperty('--end-scale', '1');
+                particle.style.setProperty('--max-opacity', '0.5');
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                container.appendChild(particle);
+            }
+            
+            // Livello 4: Medium-large
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle medium-large';
+                const startX = Math.random() * 100;
+                const drift = (Math.random() - 0.5) * 100;
+                const duration = 12 + Math.random() * 6;
+                const delay = Math.random() * 5;
+                const size = 2.5 + Math.random() * 3;
+                
+                particle.style.left = `${startX}%`;
+                particle.style.bottom = '-20px';
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.setProperty('--drift', `${drift}px`);
+                particle.style.setProperty('--start-scale', '0.6');
+                particle.style.setProperty('--end-scale', '1.2');
                 particle.style.setProperty('--max-opacity', '0.6');
                 particle.style.animationDuration = `${duration}s`;
                 particle.style.animationDelay = `${delay}s`;
                 container.appendChild(particle);
             }
             
-            // Livello Far: 20 piccole, veloci
-            for (let i = 0; i < 20; i++) {
+            // Livello 5: Large - vicine
+            for (let i = 0; i < 8; i++) {
                 const particle = document.createElement('div');
-                particle.className = 'particle far';
+                particle.className = 'particle large';
                 const startX = Math.random() * 100;
                 const drift = (Math.random() - 0.5) * 120;
-                const duration = 8 + Math.random() * 4;
+                const duration = 10 + Math.random() * 5;
                 const delay = Math.random() * 4;
-                const size = 1 + Math.random() * 2;
+                const size = 3 + Math.random() * 4;
                 
                 particle.style.left = `${startX}%`;
-                particle.style.bottom = '-15px';
+                particle.style.bottom = '-25px';
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
                 particle.style.setProperty('--drift', `${drift}px`);
-                particle.style.setProperty('--start-scale', '0.2');
-                particle.style.setProperty('--end-scale', '0.8');
-                particle.style.setProperty('--max-opacity', '0.8');
+                particle.style.setProperty('--start-scale', '0.7');
+                particle.style.setProperty('--end-scale', '1.5');
+                particle.style.setProperty('--max-opacity', '0.4');
+                particle.style.animationDuration = `${duration}s`;
+                particle.style.animationDelay = `${delay}s`;
+                container.appendChild(particle);
+            }
+            
+            // Livello 6: Huge - vicinissime, velocissime
+            for (let i = 0; i < 6; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle huge';
+                const startX = Math.random() * 100;
+                const drift = (Math.random() - 0.5) * 150;
+                const duration = 6 + Math.random() * 4;
+                const delay = Math.random() * 3;
+                const size = 5 + Math.random() * 6;
+                
+                particle.style.left = `${startX}%`;
+                particle.style.bottom = '-35px';
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.setProperty('--drift', `${drift}px`);
+                particle.style.setProperty('--start-scale', '0.8');
+                particle.style.setProperty('--end-scale', '2');
+                particle.style.setProperty('--max-opacity', '0.3');
                 particle.style.animationDuration = `${duration}s`;
                 particle.style.animationDelay = `${delay}s`;
                 container.appendChild(particle);
@@ -877,16 +1150,14 @@
 
         // Playlist con crediti
         const playlist = [
-            { path: 'assets/Celestine%20Corridor.mp3', title: 'Celestine Corridor', credit: 'suno.com' },
-            { path: 'assets/Moonglass%20Archive%20%28calm%20atmosphere%29.mp3', title: 'Moonglass Archive (calm)', credit: 'suno.com' },
-            { path: 'assets/Moonglass%20Archive.mp3', title: 'Moonglass Archive', credit: 'suno.com' },
-            { path: 'assets/Starglass%20Pavilion.mp3', title: 'Starglass Pavilion', credit: 'suno.com' },
-            { path: 'assets/Reflected%20Light%20-%20SergePavkinMusic.mp3', title: 'Reflected Light', credit: 'SergePavkinMusic' },
+            { path: 'assets/Celestine Corridor.mp3', title: 'Celestine Corridor', credit: 'suno.com' },
+            { path: 'assets/Moonglass Archive (calm atmosphere).mp3', title: 'Moonglass Archive (calm)', credit: 'suno.com' },
+            { path: 'assets/Moonglass Archive.mp3', title: 'Moonglass Archive', credit: 'suno.com' },
+            { path: 'assets/Starglass Pavilion.mp3', title: 'Starglass Pavilion', credit: 'suno.com' },
+            { path: 'assets/Reflected Light - SergePavkinMusic.mp3', title: 'Reflected Light', credit: 'SergePavkinMusic' },
             { path: 'assets/the-heros-journey-by-audio-library-beats.mp3', title: "The Hero's Journey", credit: 'Audio Library Beats' }
         ];
 
-        // Algoritmo numeri primi per shuffle
-        // Sceglie un numero primo coprime con playlist.length per garantire ciclo completo
         const primesForShuffle = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31];
         const primeStep = primesForShuffle.find(p => playlist.length % p !== 0) || 7;
         
@@ -898,30 +1169,26 @@
         audio.volume = 0;
 
         function getNextTrackIndex() {
-            // Algoritmo shuffle basato su numeri primi
-            // Offset circolare con step primo garantisce distribuzione uniforme
             currentTrackIndex = (currentTrackIndex + primeStep) % playlist.length;
             playedCount++;
-            
-            // Reset dopo un ciclo completo
             if (playedCount >= playlist.length) {
                 playedCount = 0;
             }
-            
             return currentTrackIndex;
         }
 
         function loadTrack(index) {
             const track = playlist[index];
             audio.src = track.path;
-            console.log(`Now playing: ${track.title} by ${track.credit}`);
+            console.log(`🎵 Loading: ${track.title} by ${track.credit}`);
+            console.log(`📍 Path: ${track.path}`);
         }
 
         function fadeIn(targetVolume, duration = 3000) {
             if (isFading) return;
             isFading = true;
             
-            const steps = 60; // 60 steps per smooth fade
+            const steps = 60;
             const stepDuration = duration / steps;
             const volumeIncrement = targetVolume / steps;
             
@@ -936,6 +1203,7 @@
                     clearInterval(fadeInterval);
                     isFading = false;
                     audio.volume = targetVolume;
+                    console.log(`✅ Fade-in complete at volume ${targetVolume}`);
                 }
             }, stepDuration);
         }
@@ -945,15 +1213,21 @@
             loadTrack(nextIndex);
             
             audio.play().then(() => {
+                console.log('▶️ Playing...');
                 fadeIn(currentVolume, 3000);
             }).catch(e => {
-                console.log('Playback error:', e);
+                console.error('❌ Playback error:', e);
             });
         }
 
-        // Auto-play prossima traccia quando finisce
         audio.addEventListener('ended', () => {
+            console.log('⏭️ Track ended, playing next...');
             playNextTrack();
+        });
+
+        audio.addEventListener('error', (e) => {
+            console.error('❌ Audio error:', e);
+            console.error('Failed to load:', audio.src);
         });
 
         function updateVolumeUI() {
@@ -961,31 +1235,49 @@
         }
 
         function startAudio() {
-            if (audioStarted) return;
+            if (audioStarted) {
+                console.log('⚠️ Audio already started');
+                return;
+            }
+            
+            console.log('🎬 Starting audio system...');
             audioStarted = true;
             
-            // Carica prima traccia (indice 0)
             loadTrack(0);
             
             audio.play().then(() => {
+                console.log('✅ Audio playing successfully');
                 fadeIn(currentVolume, 3000);
                 audioToggle.classList.add('playing');
             }).catch(e => {
-                console.log('Autoplay blocked');
+                console.log('🔇 Autoplay blocked:', e.message);
+                console.log('👆 Click anywhere to start music');
+                audioStarted = false;
             });
         }
 
-        document.addEventListener('DOMContentLoaded', () => setTimeout(startAudio, 200));
-        const startOnInteraction = () => {
+        // Tenta avvio immediato
+        setTimeout(() => {
+            console.log('⏰ Attempting auto-start...');
+            startAudio();
+        }, 500);
+
+        // Fallback su interazione
+        const startOnInteraction = (e) => {
+            console.log('👆 User interaction detected, starting audio...');
             startAudio();
             document.removeEventListener('click', startOnInteraction);
             document.removeEventListener('touchstart', startOnInteraction);
+            document.removeEventListener('keydown', startOnInteraction);
         };
+        
         document.addEventListener('click', startOnInteraction);
         document.addEventListener('touchstart', startOnInteraction);
+        document.addEventListener('keydown', startOnInteraction);
 
         audioToggle.addEventListener('click', (e) => {
             e.stopPropagation();
+            console.log('🎚️ Volume slider toggled');
             volumeSlider.classList.toggle('visible');
         });
 
@@ -995,6 +1287,8 @@
             const y = rect.bottom - e.clientY;
             const height = rect.height;
             currentVolume = Math.max(0, Math.min(1, y / height));
+            
+            console.log(`🔊 Volume set to ${(currentVolume * 100).toFixed(0)}%`);
             
             if (!isFading) {
                 audio.volume = currentVolume;
