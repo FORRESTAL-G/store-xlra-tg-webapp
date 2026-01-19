@@ -429,53 +429,46 @@
             backdrop-filter: blur(10px);
             border: 0.5px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            padding: 8px 14px 8px 8px;
+            padding: 8px 14px 8px 10px;
             z-index: 50;
             transition: all 0.3s ease;
         }
 
         .balance-counter:hover {
+            background: rgba(0, 0, 0, 0.6);
             border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(0, 0, 0, 0.5);
         }
 
         .balance-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .balance-icon img {
-            width: 100%;
-            height: 100%;
+            width: 24px;
+            height: 24px;
             object-fit: contain;
+            filter: drop-shadow(0 0 4px rgba(180, 200, 255, 0.4));
         }
 
         .balance-value {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
-            color: #fff;
-            letter-spacing: 0.3px;
-            min-width: 30px;
+            color: var(--palladium);
+            letter-spacing: 0.5px;
+            min-width: 40px;
             text-align: right;
         }
 
         @media (max-width: 600px) {
             .balance-counter {
-                padding: 6px 12px 6px 6px;
+                padding: 6px 12px 6px 8px;
+                gap: 6px;
             }
+            
             .balance-icon {
-                width: 24px;
-                height: 24px;
+                width: 20px;
+                height: 20px;
             }
+            
             .balance-value {
-                font-size: 14px;
+                font-size: 12px;
+                min-width: 35px;
             }
         }
 
@@ -551,9 +544,7 @@
     <div class="particles" id="particles"></div>
 
     <div class="balance-counter">
-        <div class="balance-icon">
-            <img src="assets/1.png" alt="Balance" onerror="this.src='https://placehold.co/28x28/1a1a1a/666?text=B'">
-        </div>
+        <img src="assets/1.png" alt="Balance" class="balance-icon">
         <div class="balance-value" id="balanceValue">0</div>
     </div>
 
@@ -583,7 +574,7 @@
         const CONFIG = {
             webhooks: {
                 validate: 'https://vp75.app.n8n.cloud/webhook/468awf86g4g168d4hdgd4g84163a5wd878s41/telegram-validate',
-                checkBonusAndBalance: 'https://vp75.app.n8n.cloud/webhook/60e82333-89fc-4718-84a8-3acb29be720a/check-bonus-and-balance',
+                checkBonus: 'https://vp75.app.n8n.cloud/webhook/60e82333-89fc-4718-84a8-3acb29be720a/check-bonus',
                 topUp: 'https://vp75.app.n8n.cloud/webhook/8fa65d84-e5e5-41eb-80e8-1e5afa6e6b91/top-up'
             },
             products: [
@@ -691,36 +682,17 @@
             }
         }
 
-        async function checkBonusAndBalance(userId) {
+        async function checkBonusStatus(userId) {
             try {
-                const response = await fetch(`${CONFIG.webhooks.checkBonusAndBalance}?userId=${userId}`);
-                if (!response.ok) throw new Error('Bonus and balance check failed');
+                const response = await fetch(`${CONFIG.webhooks.checkBonus}?userId=${userId}`);
+                if (!response.ok) throw new Error('Bonus check failed');
                 const data = await response.json();
                 
                 // Il webhook risponde con campo "response" contenente i dati
-                const result = data.response || data;
-                
-                // Estrai balance se presente
-                if (result.balance !== undefined) {
-                    updateBalance(result.balance);
-                }
-                
-                return result;
+                return data.response || data;
             } catch (error) {
-                console.error('Bonus and balance check error:', error);
+                console.error('Bonus check error:', error);
                 return null;
-            }
-        }
-        
-        function updateBalance(balance) {
-            const balanceEl = document.getElementById('balanceValue');
-            if (balanceEl) {
-                // Anima il cambio di valore
-                balanceEl.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    balanceEl.textContent = balance;
-                    balanceEl.style.transform = 'scale(1)';
-                }, 150);
             }
         }
         
@@ -740,8 +712,19 @@
             items: [],
             isDragging: false,
             startX: 0,
-            velocity: 0
+            velocity: 0,
+            balance: 0
         };
+
+        function updateBalanceDisplay(balance) {
+            const balanceEl = document.getElementById('balanceValue');
+            if (balanceEl) {
+                // Formatta numero con separatore migliaia
+                const formatted = balance.toLocaleString('it-IT');
+                balanceEl.textContent = formatted;
+                console.log(`💰 Balance updated: ${formatted}`);
+            }
+        }
 
         function getComputedDimensions() {
             const root = getComputedStyle(document.documentElement);
@@ -862,7 +845,17 @@
             if (validatedUser) bonusData = await checkBonusStatus(validatedUser.id);
 
             let statusMap = { "1": "1d", "2": "2d", "3": "3d" };
+            
             if (bonusData) {
+                console.log('📦 Bonus data received:', bonusData);
+                
+                // Estrai balance
+                if (bonusData.balance !== undefined) {
+                    state.balance = bonusData.balance;
+                    updateBalanceDisplay(state.balance);
+                }
+                
+                // Estrai status map prodotti
                 if (Array.isArray(bonusData) && bonusData.length > 0) statusMap = bonusData[0];
                 else if (typeof bonusData === 'object' && !Array.isArray(bonusData)) statusMap = bonusData;
             }
