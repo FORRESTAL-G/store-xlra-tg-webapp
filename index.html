@@ -642,8 +642,12 @@
         if (tg) {
             tg.MainButton.onClick(async () => {
                 if (state.mode !== 'focused') return;
+                if (!validatedUser) {
+                    console.error('User not validated');
+                    return;
+                }
                 const currentItem = state.items[state.activeIndex];
-                const userId = validatedUser ? validatedUser.id : (tg.initDataUnsafe?.user?.id || 0);
+                const userId = validatedUser.id;
 
                 try {
                     const response = await fetch(CONFIG.webhooks.topUp, {
