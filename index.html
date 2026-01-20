@@ -657,10 +657,8 @@
         if (tg) {
             tg.MainButton.onClick(async () => {
                 if (state.mode !== 'focused') return;
-                if (!validatedUser) {
-                    console.error('User not validated');
-                    return;
-                }
+                if (!validatedUser) return;
+
                 const currentItem = state.items[state.activeIndex];
                 const userId = validatedUser.id;
 
@@ -675,12 +673,28 @@
                         })
                     });
 
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log('Purchase initiated:', data);
-                    } else {
+                    if (!response.ok) {
                         console.error('Purchase failed:', response.status);
+                        return;
                     }
+
+                    const data = await response.json();
+                    const link = data?.response?.link;
+
+                    if (!link) {
+                        console.error('No link returned by webhook');
+                        return;
+                    }
+
+                    // ✅ TELEGRAM WEBAPP
+                    if (tg?.openLink) {
+                        tg.openLink(link);
+                    }
+                    // ✅ FALLBACK BROWSER NORMALE
+                    else {
+                        window.open(link, '_blank', 'noopener,noreferrer');
+                    }
+
                 } catch (error) {
                     console.error('Purchase error:', error);
                 }
