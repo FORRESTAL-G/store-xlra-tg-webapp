@@ -876,79 +876,6 @@
             calculateLayout();
         }
 
-        /* ============================
-        TEST BUTTON (DEBUG ONLY)
-        RIMUOVERE PRIMA DELLA PROD
-        ============================ */
-
-        const TEST_USER_ID = 519366205;
-
-        function maybeCreateTestButton() {
-            if (!validatedUser || validatedUser.id !== TEST_USER_ID) return;
-
-            if (document.getElementById('testWebhookBtn')) return; // evita doppioni
-
-            const btn = document.createElement('button');
-            btn.id = 'testWebhookBtn';
-            btn.textContent = 'TEST WEBHOOK';
-
-            Object.assign(btn.style, {
-                position: 'fixed',
-                bottom: '20px',
-                left: '20px',
-                zIndex: '9999',
-                padding: '10px 14px',
-                borderRadius: '8px',
-                border: '1px solid rgba(255,255,255,0.2)',
-                background: 'rgba(0,0,0,0.6)',
-                color: '#fff',
-                fontSize: '12px',
-                cursor: 'pointer',
-                backdropFilter: 'blur(6px)'
-            });
-
-            btn.addEventListener('click', async () => {
-                const languageCode =
-                    validatedUser?.language_code === 'it' ? 'it' : 'en';
-
-                try {
-                    const response = await fetch(CONFIG.webhooks.topUp, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chatid: validatedUser.id,
-                            productid: 'test',
-                            language_code: languageCode
-                        })
-                    });
-
-                    if (!response.ok) {
-                        console.error('TEST webhook failed:', response.status);
-                        return;
-                    }
-
-                    const data = await response.json();
-                    const link = data?.response?.link;
-
-                    if (!link) {
-                        console.warn('TEST webhook: no link returned');
-                        return;
-                    }
-
-                    if (window.Telegram?.WebApp?.openLink) {
-                        window.Telegram.WebApp.openLink(link);
-                    } else {
-                        window.open(link, '_blank', 'noopener,noreferrer');
-                    }
-
-                } catch (err) {
-                    console.error('TEST webhook error:', err);
-                }
-            });
-
-            document.body.appendChild(btn);
-        }
-
         // ========== INIT APP ==========
 
         async function init() {
@@ -1085,8 +1012,6 @@
             }
 
             setTimeout(() => calculateLayout(), 0);
-
-            maybeCreateTestButton();
 
             document.getElementById('loader').style.opacity = '0';
             setTimeout(() => {
