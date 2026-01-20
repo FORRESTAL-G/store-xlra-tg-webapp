@@ -949,16 +949,19 @@
                 el.innerHTML = `
                     <div class="img-container">
                         ${ribbonHtml}
-                        <img src="${imgPath}" class="item-img" alt="${title}" onerror="this.src='https://place-hold.it/160x160/1a1a1a/666?text=Orb/${p.id}'">
+                        <img src="${imgPath}" class="item-img" alt="${title}"
+                            onerror="this.src='https://place-hold.it/160x160/1a1a1a/666?text=Orb/${p.id}'">
                     </div>
+
                     <div class="info-panel">
                         <div class="title">${title}</div>
                         <div class="desc">${desc}</div>
+
+                        ${showLore ? `
+                        <div class="lore-divider"></div>
+                        <div class="lore-quote">${CONFIG.loreQuote[languageCode]}</div>
+                        ` : ''}
                     </div>
-                    ${showLore ? `
-                    <div class="lore-divider"></div>
-                    <div class="lore-quote">${CONFIG.loreQuote[languageCode]}</div>
-                    ` : ''}
                 `;
 
                 el.querySelector('.img-container').addEventListener('click', (e) => {
