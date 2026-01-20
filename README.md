@@ -7,7 +7,3 @@
 
 ### [Reflected Light](assets/Reflected%20Light%20-%20SergePavkinMusic.mp3) by SergePavkinMusic
 Music promoted by pixebay: https://pixabay.com/music/beautiful-plays-reflected-light-147979/
-
-### [The Hero's Journey](assets/the-heros-journey-by-audio-library-beats.mp3) by Audio Library Beats Group
-Free Download / Stream: https://www.audiolibrary.com.co/audio-library-beats/the-heros-journey
-Music promoted by Audio Library: https://youtu.be/NfQysxCrM6A
