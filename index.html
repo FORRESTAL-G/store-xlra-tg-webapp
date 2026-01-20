@@ -598,8 +598,23 @@
                 it: 'Orb della Genesi - energia pura necessaria alla manifestazione della tua strategia.',
                 en: 'Genesis Orb - pure energy necessary to manifest your communication strategy.'
             },
-            loreQuote: 'A wise man once said Heaven does not create one person above or below another. But that is not the whole quote. He goes on to say that While we are all equal at birth, pretty soon things begin to change. Academic effort is what sets some people apart to rise above the other. At any rate, humans change over time based on their actions. Truth be told--at the end of the day--equality is just a fantasy, and most of us go through life denying the fact that we live in a meritocracy.'
+            loreQuote: {
+                it: 'Un uomo saggio disse che il cielo non crea una persona superiore o inferiore a un’altra. Ma non è tutta la citazione. Prosegue dicendo che, sebbene tutti nasciamo uguali, ben presto le cose cambiano. È l’impegno che distingue chi si eleva dagli altri.',
+                en: 'A wise man once said Heaven does not create one person above or below another. But that is not the whole quote. While we are all equal at birth, things soon begin to change.'
+            }
         };
+
+        function parseBonus(assetCode) {
+            if (!assetCode || !assetCode.includes('b')) return null;
+
+            return {
+                multiplier: 'X2',
+                extraCredits:
+                    assetCode.startsWith('1') ? 400 :
+                    assetCode.startsWith('2') ? 2300 :
+                    10500
+            };
+        }        
 
         // Shimmer sound - UI Click soft
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -655,7 +670,8 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             chatid: userId,
-                            productid: currentItem.asset
+                            productid: currentItem.asset,
+                            language_code: validatedUser.language_code
                         })
                     });
 
@@ -684,15 +700,19 @@
                 if (!response.ok) throw new Error('Validation failed');
 
                 const data = await response.json();
-                if (data.valid && data.user) {
-                    return data.user;
+                const payload = Array.isArray(data) ? data[0] : data;
+
+                if (payload?.valid && payload?.user) {
+                    return payload.user;
                 }
-                throw new Error('Invalid user data');
+
+                return null;
             } catch (error) {
                 console.error('Telegram validation error:', error);
                 return null;
             }
         }
+
 
         async function checkBonusStatus(userId) {
             try {
@@ -844,9 +864,12 @@
 
         async function init() {
             const stage = document.getElementById('stage');
+            
+            let languageCode = 'en'; // fallback globale
 
             if (isTelegram) {
                 validatedUser = await validateTelegramUser();
+                const languageCode = validatedUser?.language_code === 'it' ? 'it' : 'en';
 
                 if (!validatedUser) {
                     document.getElementById('loader').innerHTML = `
@@ -884,29 +907,20 @@
                 }
             }
 
-            const isIt = validatedUser?.languagecode === 'it' || true;
-
             for (let i = 0; i < CONFIG.products.length; i++) {
                 const p = CONFIG.products[i];
                 const productIdStr = p.id.toString();
                 const assetCode = statusMap[productIdStr] || p.id + 'd';
-                const isBonus = assetCode.includes('b');
 
-                let title = isIt ? p.nameIt : p.nameEn;
-                const desc = isIt ? CONFIG.descriptions.it : CONFIG.descriptions.en;
+                let title = languageCode === 'it' ? p.nameIt : p.nameEn;
+                const desc = CONFIG.descriptions[languageCode];
 
                 // ============ LOGICA APPENDICE BONUS AL TITOLO ============
                 // Se c'è un bonus, aggiungi l'appendice al titolo
-                if (isBonus) {
-                    const bonusTexts = {
-                        '1d': '+ 400 BONUS!',
-                        '2d': '+ 2300 BONUS!',
-                        '3d': '+ 10500 BONUS!'
-                    };
-                    const bonusText = bonusTexts[assetCode] || '';
-                    if (bonusText) {
-                        title = `${title} ${bonusText}`;
-                    }
+                const bonus = parseBonus(assetCode);
+
+                if (bonus) {
+                    title += ` + ${bonus.extraCredits} BONUS!`;
                 }
                 // ============ FINE LOGICA APPENDICE ============
 
@@ -920,15 +934,15 @@
                 const imgPath = `assets/${p.id}.png`;
 
                 let ribbonHtml = '';
-                if (isBonus) {
-                    ribbonHtml = `<div class="bonus-ribbon">BONUS 2</div>`;
+                if (bonus) {
+                    ribbonHtml = `<div class="bonus-ribbon">BONUS ${bonus.multiplier}</div>`;
                 }
 
                 let loreHtml = '';
                 if (showLore) {
                     loreHtml = `
                         <div class="lore-divider"></div>
-                        <div class="lore-quote">${CONFIG.loreQuote}</div>
+                        <div class="lore-quote">${CONFIG.loreQuote[languageCode]}</div>
                     `;
                 }
 
@@ -940,8 +954,11 @@
                     <div class="info-panel">
                         <div class="title">${title}</div>
                         <div class="desc">${desc}</div>
-                        ${loreHtml}
                     </div>
+                    ${showLore ? `
+                    <div class="lore-divider"></div>
+                    <div class="lore-quote">${CONFIG.loreQuote[languageCode]}</div>
+                    ` : ''}
                 `;
 
                 el.querySelector('.img-container').addEventListener('click', (e) => {
@@ -1196,168 +1213,159 @@
             }
         }
 
-        // ========== AUDIO SYSTEM ==========
+        // ========== AUDIO SYSTEM (PATCH 5 - SRS SHUFFLE) ==========
         const audio = document.getElementById('bgAudio');
         const audioToggle = document.getElementById('audioToggle');
         const volumeSlider = document.getElementById('volumeSlider');
         const volumeTrack = document.getElementById('volumeTrack');
         const volumeFill = document.getElementById('volumeFill');
 
-        const playlist = [
-            { path: 'assets/Celestine Corridor.mp3', title: 'Celestine Corridor', credit: 'suno.com' },
-            { path: 'assets/Moonglass Archive calm atmosphere.mp3', title: 'Moonglass Archive calm', credit: 'suno.com' },
-            { path: 'assets/Moonglass Archive.mp3', title: 'Moonglass Archive', credit: 'suno.com' },
-            { path: 'assets/Starglass Pavilion.mp3', title: 'Starglass Pavilion', credit: 'suno.com' },
-            { path: 'assets/Reflected Light - SergePavkinMusic.mp3', title: 'Reflected Light', credit: 'SergePavkinMusic' },
-            { path: 'assets/the-heros-journey-by-audio-library-beats.mp3', title: 'The Heros Journey', credit: 'Audio Library Beats' }
-        ];
-
-        const primesForShuffle = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31];
-        const primeStep = primesForShuffle.find(p => playlist.length % p !== 0) || 7;
-
-        let currentTrackIndex = 0;
-        let playedCount = 0;
-        let currentVolume = 0.5;
-        let audioStarted = false;
-        let isFading = false;
-
+        // Volume base: 1/5 del precedente
+        let baseVolume = 0.2;
         audio.volume = 0;
 
-        function getNextTrackIndex() {
-            currentTrackIndex = (currentTrackIndex + primeStep) % playlist.length;
-            playedCount++;
+        let allTracks = [];
+        let shuffleBag = [];
+        let audioStarted = false;
+        let isDraggingVolume = false;
 
-            if (playedCount >= playlist.length) {
-                playedCount = 0;
+        /**
+         * Carica dinamicamente tutti i file assets/music/1.mp3, 2.mp3, ...
+         * Si ferma al primo file mancante.
+         */
+        async function loadAllTracks() {
+            let index = 1;
+
+            while (true) {
+                const path = `assets/music/${index}.mp3`;
+                const testAudio = new Audio(path);
+
+                try {
+                    await testAudio.play();
+                    testAudio.pause();
+                    allTracks.push(path);
+                    index++;
+                } catch {
+                    break;
+                }
             }
 
-            return currentTrackIndex;
+            refillShuffleBag();
         }
 
-        function loadTrack(index) {
-            const track = playlist[index];
-            audio.src = track.path;
-            console.log(`Loading ${track.title} by ${track.credit}`);
-            console.log(`Path: ${track.path}`);
+        /**
+         * Shuffle reale, nessuna ripetizione finché non finiscono
+         */
+        function refillShuffleBag() {
+            shuffleBag = [...allTracks].sort(() => Math.random() - 0.5);
         }
 
-        function fadeIn(targetVolume, duration = 3000) {
-            if (isFading) return;
+        /**
+         * Riproduce la prossima traccia
+         */
+        function playNextTrack() {
+            if (shuffleBag.length === 0) {
+                refillShuffleBag();
+            }
 
-            isFading = true;
-            const steps = 60;
-            const stepDuration = duration / steps;
-            const volumeIncrement = targetVolume / steps;
-            let currentStep = 0;
+            const nextTrack = shuffleBag.shift();
+            audio.src = nextTrack;
 
+            audio.play()
+                .then(() => fadeIn(6))
+                .catch(err => {
+                    console.warn('Audio play blocked:', err.message);
+                });
+        }
+
+        /**
+         * Fade-in morbido (6 secondi)
+         */
+        function fadeIn(seconds) {
             audio.volume = 0;
+            const steps = 60;
+            const stepTime = (seconds * 1000) / steps;
+            const volumeStep = baseVolume / steps;
 
-            const fadeInterval = setInterval(() => {
+            let currentStep = 0;
+            const interval = setInterval(() => {
                 currentStep++;
-                audio.volume = Math.min(targetVolume, volumeIncrement * currentStep);
+                audio.volume = Math.min(baseVolume, volumeStep * currentStep);
 
                 if (currentStep >= steps) {
-                    clearInterval(fadeInterval);
-                    isFading = false;
-                    audio.volume = targetVolume;
-                    console.log(`Fade-in complete at volume ${targetVolume}`);
+                    clearInterval(interval);
+                    audio.volume = baseVolume;
                 }
-            }, stepDuration);
+            }, stepTime);
         }
 
-        function playNextTrack() {
-            const nextIndex = getNextTrackIndex();
-            loadTrack(nextIndex);
-
-            audio.play()
-                .then(() => {
-                    console.log('Playing...');
-                    fadeIn(currentVolume, 3000);
-                })
-                .catch(e => {
-                    console.error('Playback error:', e);
-                });
-        }
-
-        audio.addEventListener('ended', () => {
-            console.log('Track ended, playing next...');
-            playNextTrack();
-        });
-
-        audio.addEventListener('error', (e) => {
-            console.error('Audio error:', e);
-            console.error(`Failed to load ${audio.src}`);
-        });
-
-        function updateVolumeUI() {
-            volumeFill.style.height = currentVolume * 100 + '%';
-        }
-
-        function startAudio() {
-            if (audioStarted) {
-                console.log('Audio already started');
-                return;
-            }
-
-            console.log('Starting audio system...');
+        /**
+         * Avvio audio al primo input utente
+         */
+        function startAudioSystem() {
+            if (audioStarted) return;
             audioStarted = true;
 
-            loadTrack(0);
-
-            audio.play()
-                .then(() => {
-                    console.log('Audio playing successfully');
-                    fadeIn(currentVolume, 3000);
+            loadAllTracks().then(() => {
+                if (allTracks.length > 0) {
+                    playNextTrack();
                     audioToggle.classList.add('playing');
-                })
-                .catch((e) => {
-                    console.log('Autoplay blocked:', e.message);
-                    console.log('Click anywhere to start music');
-                    audioStarted = false;
-                });
-
-            setTimeout(() => {
-                if (!audioStarted) {
-                    console.log('Attempting auto-start...');
-                    startAudio();
                 }
-            }, 500);
+            });
         }
 
-        const startOnInteraction = (e) => {
-            console.log('User interaction detected, starting audio...');
-            startAudio();
-            document.removeEventListener('click', startOnInteraction);
-            document.removeEventListener('touchstart', startOnInteraction);
-            document.removeEventListener('keydown', startOnInteraction);
-        };
+        /**
+         * Eventi autoplay-safe
+         */
+        const audioStartEvents = ['click', 'touchstart', 'keydown'];
+        audioStartEvents.forEach(evt => {
+            document.addEventListener(evt, startAudioSystem, { once: true });
+        });
 
-        document.addEventListener('click', startOnInteraction);
-        document.addEventListener('touchstart', startOnInteraction);
-        document.addEventListener('keydown', startOnInteraction);
+        /**
+         * Prossima traccia alla fine
+         */
+        audio.addEventListener('ended', playNextTrack);
 
+        /**
+         * UI — toggle slider
+         */
         audioToggle.addEventListener('click', (e) => {
             e.stopPropagation();
-            console.log('Volume slider toggled');
             volumeSlider.classList.toggle('visible');
         });
 
-        volumeTrack.addEventListener('click', (e) => {
-            e.stopPropagation();
+        /**
+         * UI — drag volume
+         */
+        volumeTrack.addEventListener('pointerdown', (e) => {
+            isDraggingVolume = true;
+            volumeTrack.setPointerCapture(e.pointerId);
+        });
+
+        volumeTrack.addEventListener('pointermove', (e) => {
+            if (!isDraggingVolume) return;
 
             const rect = volumeTrack.getBoundingClientRect();
             const y = rect.bottom - e.clientY;
-            const height = rect.height;
+            const percent = Math.max(0, Math.min(1, y / rect.height));
 
-            currentVolume = Math.max(0, Math.min(1, y / height));
+            baseVolume = percent;
+            audio.volume = percent;
+            volumeFill.style.height = (percent * 100) + '%';
+        });
 
-            console.log(`Volume set to ${(currentVolume * 100).toFixed(0)}%`);
+        volumeTrack.addEventListener('pointerup', () => {
+            isDraggingVolume = false;
+        });
 
-            if (!isFading) {
-                audio.volume = currentVolume;
+        /**
+         * Click fuori → collapse slider
+         */
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.audio-control')) {
+                volumeSlider.classList.remove('visible');
             }
-
-            updateVolumeUI();
         });
 
         createParticles();
