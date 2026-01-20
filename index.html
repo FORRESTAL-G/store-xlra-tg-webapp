@@ -961,7 +961,7 @@
 
             if (isTelegram) {
                 validatedUser = await validateTelegramUser();
-                const languageCode = validatedUser?.language_code === 'it' ? 'it' : 'en';
+                languageCode = validatedUser?.language_code === 'it' ? 'it' : 'en';
 
                 if (!validatedUser) {
                     document.getElementById('loader').innerHTML = `
