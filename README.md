@@ -2,8 +2,8 @@
 
 ## Music credits:
 
-### [Celestine Corridor](assets/Celestine%20Corridor.mp3); [Moonglass Archive (calm atmosphere)](assets/Moonglass%20Archive%20%28calm%20atmosphere%29.mp3); [Moonglass Archive](assets/Moonglass%20Archive.mp3); [Starglass Pavilion](assets/Starglass%20Pavilion.mp3);
+### [Celestine Corridor](assets/music/2.mp3); [Moonglass Archive (calm atmosphere)](assets/music/3.mp3); [Moonglass Archive](assets/music/4.mp3); [Starglass Pavilion](assets/music/5.mp3);
     Created with suno.com
 
-### [Reflected Light](assets/Reflected%20Light%20-%20SergePavkinMusic.mp3) by SergePavkinMusic
+### [Reflected Light](assets/music/1.mp3.mp3) by SergePavkinMusic
 Music promoted by pixebay: https://pixabay.com/music/beautiful-plays-reflected-light-147979/
